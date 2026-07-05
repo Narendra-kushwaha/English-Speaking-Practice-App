@@ -1,193 +1,337 @@
-# 📚 English Practice App — Complete Guide
+# 📚 English Practice App
 
-## 🆕 Naye Features (is update mein)
+> An AI-powered English Learning Platform built with **React**, **Firebase**, and **Google Gemini AI**.
 
-1. **Admin ka Permanent 8-digit Unique ID** — register karte hi auto-generate hota hai, kabhi change nahi hota
-2. **Student registration mein Admin ID zaroori** — student apne Admin ki ID daal kar uske under register hota hai
-3. **Developer Panel** — ab sirf **Admins** ki list dikhati hai (students nahi)
-4. **Account Settings (Fixed)** — Password / Email / Mobile change ab properly kaam karta hai (current password verify karke)
-5. **Admin Dashboard — Student Tracking**:
-   - Har student ka Total Attempted / Total Correct
-   - Aaj (Today) ka Attempted / Correct
-   - Level-wise (Beginner/Intermediate/Advanced) score
-   - 🏆 Top 3 students aaj ke liye (badge/trophy)
-6. **Student Dashboard** — apna khud ka score (Total + Today + Level-wise)
-7. **Group Discussion** — real naam dikhta hai, baaki details private
+The English Practice App helps students improve their English through interactive exercises, AI-powered writing evaluation, progress tracking, and real-time collaboration. The platform supports three different roles—**Student**, **Admin**, and **Developer**—each with dedicated dashboards and permissions.
 
 ---
 
-## 🏗️ Project Structure
+## 🌟 Key Features
+
+### 👨‍🎓 Student
+
+* Secure Email & Password Authentication
+* Email Verification
+* Register using Admin's Permanent 8-Digit ID
+* Fill in the Blanks Practice
+* Hindi to English Translation
+* English Writing Practice
+* AI-powered Writing Feedback (Gemini AI)
+* Daily & Overall Progress Tracking
+* Level-wise Performance (Beginner, Intermediate, Advanced)
+* Group Discussion
+* Account Settings
+* Change Password
+* Change Email
+* Change Mobile Number
+
+---
+
+### 👨‍🏫 Admin
+
+* Permanent Auto-generated 8-Digit Admin ID
+* Manage Questions
+* View Student Analytics
+* Total Attempted Questions
+* Total Correct Answers
+* Today's Performance
+* Level-wise Student Scores
+* Daily Top 3 Leaderboard
+* Student Block / Unblock
+* Batch & Group Management
+* Send Announcements
+
+---
+
+### 👨‍💻 Developer
+
+* Hidden Developer Login
+* Developer Secret Authentication
+* Manage Admin Accounts
+* Block / Delete Admins
+* View All Registered Admins
+* Student Accounts Hidden from Developer Panel
+
+---
+
+# 🏗️ Tech Stack
+
+| Category          | Technology                 |
+| ----------------- | -------------------------- |
+| Frontend          | React.js                   |
+| Styling           | Tailwind CSS               |
+| Authentication    | Firebase Authentication    |
+| Database          | Cloud Firestore            |
+| Realtime Features | Firebase Realtime Database |
+| AI                | Google Gemini API          |
+| Routing           | React Router               |
+| State Management  | React Hooks                |
+
+---
+
+# 📂 Project Structure
 
 ```
 english-practice/
-├── public/index.html
-├── package.json
+│
+├── public/
+│   └── index.html
+│
 ├── src/
-│   ├── App.jsx                 ← Main router
+│   ├── App.jsx
 │   ├── index.js
-│   ├── keys.js                 ← 🔑 SAB KEYS YAHAN DAALO
-│   ├── hooks/useAuth.js
-│   ├── data/questions.js       ← Default questions + styles
+│   ├── keys.js
+│   │
+│   ├── hooks/
+│   │   └── useAuth.js
+│   │
+│   ├── data/
+│   │   └── questions.js
+│   │
 │   ├── utils/
-│   │   ├── setup.js            ← Firebase init
-│   │   ├── store.js            ← Firestore + Realtime DB
-│   │   ├── ai.js                ← Gemini AI
-│   │   ├── auth.js             ← Login/Register/Password logic
-│   │   └── progress.js         ← Score tracking
+│   │   ├── setup.js
+│   │   ├── auth.js
+│   │   ├── ai.js
+│   │   ├── progress.js
+│   │   └── store.js
+│   │
 │   └── components/
-│       ├── shared/UI.jsx
 │       ├── auth/
-│       │   ├── LoginScreen.jsx
-│       │   ├── RegisterScreen.jsx
-│       │   └── AccountSettings.jsx   ← Password/Email/Mobile (FIXED)
 │       ├── student/
-│       │   ├── StudentHome.jsx       ← Score dashboard yahan
-│       │   ├── FillMode.jsx
-│       │   ├── HindiMode.jsx
-│       │   ├── WritingMode.jsx
-│       │   └── StudentGroups.jsx
 │       ├── admin/
-│       │   ├── AdminPanel.jsx        ← Admin ID dikhta hai yahan
-│       │   ├── QuestionManager.jsx
-│       │   ├── UserManager.jsx       ← Student tracking + Top 3
-│       │   └── GroupManager.jsx
-│       └── developer/
-│           ├── DeveloperAuth.jsx
-│           └── DeveloperPanel.jsx    ← Sirf Admins dikhte hain
+│       ├── developer/
+│       └── shared/
+│
+└── package.json
 ```
 
 ---
 
-## 🚀 STEP BY STEP SETUP
-
-### STEP 1 — Node.js Install Karo
-👉 https://nodejs.org → LTS version → Install
+# 🔐 Authentication Flow
 
 ```
-node -v
-npm -v
-```
-
----
-
-### STEP 2 — Google Gemini API Key (FREE)
-👉 https://aistudio.google.com/apikey → **Create API Key** → Copy
-
----
-
-### STEP 3 — Firebase Setup (FREE)
-
-**A) Project Banao**
-👉 https://console.firebase.google.com → Add Project → naam do → Create
-
-**B) Web App Add Karo**
-Project khol kar `</>` icon click karo → Register app → Config copy karo
-
-**C) Authentication ON Karo**
-Authentication → Get Started → Email/Password → Enable
-
-**D) Firestore Database Banao**
-Firestore Database → Create Database → Start in **test mode** → Done
-
-**E) Realtime Database Banao**
-Realtime Database → Create Database → **test mode** → Done
-
----
-
-### STEP 4 — `src/keys.js` Mein Apni Keys Daalo
-
-```js
-export const GEMINI_KEY = "AIzaSy...";   // Step 2 wali key
-
-export const FB = {
-  apiKey:            "AIzaSy...",
-  authDomain:        "your-project.firebaseapp.com",
-  projectId:         "your-project-id",
-  storageBucket:     "your-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId:             "1:123:web:abc",
-  databaseURL:       "https://your-project-default-rtdb.firebaseio.com",
-};
-
-export const DEV_SECRET = "DEV@SECRET#2024";  // apna khud rakho
+Developer
+      │
+      ▼
+Create Admin
+      │
+      ▼
+Admin receives Permanent 8-Digit ID
+      │
+      ▼
+Student registers using Admin ID
+      │
+      ▼
+Email Verification
+      │
+      ▼
+Login
+      │
+      ▼
+Dashboard
 ```
 
 ---
 
-### STEP 5 — Install + Run
+# 📊 Dashboard Overview
+
+## Student Dashboard
+
+* Today's Score
+* Overall Score
+* Level-wise Progress
+* AI Feedback
+* Practice History
+* Group Discussion
+
+---
+
+## Admin Dashboard
+
+* Student Analytics
+* Today's Performance
+* Overall Performance
+* Question Management
+* Top 3 Students
+* Group Manager
+* Announcements
+
+---
+
+## Developer Dashboard
+
+* Admin Management
+* Admin Monitoring
+* Account Control
+
+---
+
+# 🤖 AI Features
+
+Google Gemini AI is used to:
+
+* Evaluate Writing
+* Improve Grammar
+* Suggest Better Sentences
+* Provide Writing Feedback
+
+---
+
+# 🚀 Installation
+
+## Clone Repository
+
+```bash
+git clone https://github.com/Java-Bhagwan/english-practice.git
+```
+
+## Move into Project
 
 ```bash
 cd english-practice
+```
+
+## Install Dependencies
+
+```bash
 npm install
+```
+
+## Start Development Server
+
+```bash
 npm start
 ```
 
-👉 Browser mein khulega: **http://localhost:3000**
+---
+
+# 🔑 Configuration
+
+Create a **src/keys.js** file.
+
+```javascript
+export const GEMINI_KEY = "YOUR_GEMINI_API_KEY";
+
+export const FB = {
+  apiKey:"",
+  authDomain:"",
+  projectId:"",
+  storageBucket:"",
+  messagingSenderId:"",
+  appId:"",
+  databaseURL:""
+};
+
+export const DEV_SECRET = "YOUR_DEVELOPER_SECRET";
+```
 
 ---
 
-## 🔐 Pehli Baar Use Kaise Karo
+# 👨‍💻 First Time Setup
 
-### 1️⃣ Developer Account Banao (Sabse Pehle)
-- Login screen → **"👨‍💻 Developer Panel"** click karo
-- **Register** tab → Name, Email, Mobile, Password, **Secret Key** (keys.js wali) daalo
-- Email verify karo → Login karo
+## Step 1
 
-### 2️⃣ Admin Account Banao
-- Login screen → **"Admin"** select karo → **Create account**
-- Details + **Developer Secret Key** daalo
-- ✅ Register hote hi ek **8-digit Admin ID** milegi (screen pe dikhegi)
-- **Yeh ID save karo!** — kabhi change nahi hogi
-- Email verify karo → Login karo
+Create Developer Account
 
-### 3️⃣ Student Account Banao
-- Login screen → **"Student"** select karo → **Create account**
-- Name, Email, Mobile, Password + **Admin ki 8-digit ID** daalo
-- Email verify karo → Login karo
+↓
 
----
+## Step 2
 
-## 📊 Admin Dashboard Features
+Create Admin Account
 
-- **Apni Admin ID** top pe dikhti hai — students ko share karo
-- **Question Manager** — apne students ke liye custom questions add karo
-- **Student Manager**:
-  - Sirf apni Admin ID se jude students dikhenge
-  - Har student ka: Total Tried, Total Correct, Today Tried, Today Correct, Level-wise score
-  - **🏆 Top 3 Today** tab — aaj ke best performers (badge ke saath)
-  - Block/Unblock option
-- **Group Discussion** — apne students ke liye batch groups
+↓
+
+## Step 3
+
+Admin receives Permanent 8-Digit ID
+
+↓
+
+## Step 4
+
+Students register using Admin ID
+
+↓
+
+## Step 5
+
+Students start practicing English
 
 ---
 
-## 🔑 Account Settings (Fixed!)
+# 📈 Student Analytics
 
-Ab teeno cheezein sahi se kaam karti hain:
+Admin can monitor:
 
-- **Password Change**: Current password daalo → New password set karo
-- **Email Change**: Current password verify karke → New email set karo
-- **Mobile Change**: Seedha update ho jata hai
-
-(Firebase security requirement: email/password change karne ke liye current password se re-verify karna padta hai — yeh ab automatically handle hota hai)
-
----
-
-## ⚠️ Common Errors
-
-| Error | Fix |
-|-------|-----|
-| Blank screen | `src/keys.js` mein sahi Firebase keys check karo |
-| "Invalid Admin ID" | Admin se sahi 8-digit ID lo |
-| Password change fail | Current password sahi daalo |
-| AI feedback nahi aa raha | Gemini key check karo |
-| Login nahi ho raha | Email verify karo pehle (inbox check karo) |
+* Total Attempted Questions
+* Total Correct Answers
+* Today's Attempts
+* Today's Correct Answers
+* Beginner Score
+* Intermediate Score
+* Advanced Score
+* Daily Top 3 Students
 
 ---
 
-## 💡 Important Notes
+# 🏆 Leaderboard
 
-- Admin ID **permanent** hai — kabhi change nahi hoga
-- Ek student sirf **ek hi Admin** ke under register ho sakta hai
-- Developer Panel mein **sirf Admins** dikhte hain, students nahi
-- Top 3 leaderboard **daily reset** hota hai (aaj ke correct answers ke basis pe)
-- Firestore "test mode" 30 din free hai — uske baad security rules set karni hongi production ke liye
+Every day the application automatically displays:
+
+🥇 Rank 1
+
+🥈 Rank 2
+
+🥉 Rank 3
+
+based on today's correct answers.
+
+---
+
+# ⚠️ Common Errors
+
+| Error                  | Solution                                  |
+| ---------------------- | ----------------------------------------- |
+| Blank Screen           | Check Firebase configuration in `keys.js` |
+| Invalid Admin ID       | Enter a valid 8-digit Admin ID            |
+| Login Failed           | Verify email before login                 |
+| AI Not Working         | Verify Gemini API Key                     |
+| Password Update Failed | Enter the current password correctly      |
+
+---
+
+# 🔮 Future Improvements
+
+* Voice Conversation Practice
+* Pronunciation Checker
+* Speaking Test
+* AI Chat Teacher
+* Daily Challenges
+* Achievement Badges
+* Certificates
+* Push Notifications
+* Dark Mode
+* Mobile Application
+* Live Video Speaking Room
+
+---
+
+# 👨‍💻 Author
+
+**Raja**
+
+GitHub: **Java-Bhagwan**
+
+---
+
+# ⭐ Support
+
+If you found this project helpful, please consider giving it a ⭐ on GitHub.
+
+It helps others discover the project and motivates future development.
+
+---
+
+# 📄 License
+
+This project is licensed under the MIT License.
