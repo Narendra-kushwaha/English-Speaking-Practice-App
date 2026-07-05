@@ -1,131 +1,220 @@
 # 📚 English Practice App
 
-> An AI-powered English Learning Platform built with **React**, **Firebase**, and **Google Gemini AI**.
+<p align="center">
 
-The English Practice App helps students improve their English through interactive exercises, AI-powered writing evaluation, progress tracking, and real-time collaboration. The platform supports three different roles—**Student**, **Admin**, and **Developer**—each with dedicated dashboards and permissions.
+<img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react"/>
+<img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase"/>
+<img src="https://img.shields.io/badge/TailwindCSS-06B6D4?style=for-the-badge&logo=tailwindcss"/>
+<img src="https://img.shields.io/badge/Google%20Gemini-AI-8E75FF?style=for-the-badge"/>
+<img src="https://img.shields.io/badge/License-MIT-success?style=for-the-badge"/>
 
----
+</p>
 
-## 🌟 Key Features
+<h3 align="center">
+An AI-Powered English Learning Platform built with React, Firebase & Google Gemini AI.
+</h3>
 
-### 👨‍🎓 Student
-
-* Secure Email & Password Authentication
-* Email Verification
-* Register using Admin's Permanent 8-Digit ID
-* Fill in the Blanks Practice
-* Hindi to English Translation
-* English Writing Practice
-* AI-powered Writing Feedback (Gemini AI)
-* Daily & Overall Progress Tracking
-* Level-wise Performance (Beginner, Intermediate, Advanced)
-* Group Discussion
-* Account Settings
-* Change Password
-* Change Email
-* Change Mobile Number
+<p align="center">
+Practice English through interactive exercises, AI-powered writing evaluation, progress tracking, analytics, and real-time collaboration.
+</p>
 
 ---
 
-### 👨‍🏫 Admin
+## 🔗 Quick Links
 
-* Permanent Auto-generated 8-Digit Admin ID
-* Manage Questions
-* View Student Analytics
-* Total Attempted Questions
-* Total Correct Answers
-* Today's Performance
-* Level-wise Student Scores
-* Daily Top 3 Leaderboard
-* Student Block / Unblock
-* Batch & Group Management
-* Send Announcements
+<p align="center">
+
+<a href="🔗 YOUR_LIVE_DEMO_LINK">
+<img src="https://img.shields.io/badge/🌐_Live_Demo-Visit-blue?style=for-the-badge">
+</a>
+
+<a href="🔗 YOUR_GITHUB_REPOSITORY">
+<img src="https://img.shields.io/badge/📂_GitHub-Repository-black?style=for-the-badge">
+</a>
+
+<a href="🔗 YOUR_PORTFOLIO_LINK">
+<img src="https://img.shields.io/badge/🌍_Portfolio-Visit-success?style=for-the-badge">
+</a>
+
+<a href="🔗 YOUR_LINKEDIN_LINK">
+<img src="https://img.shields.io/badge/LinkedIn-Profile-0A66C2?style=for-the-badge&logo=linkedin">
+</a>
+
+</p>
 
 ---
 
-### 👨‍💻 Developer
+# 📸 Screenshots
 
-* Hidden Developer Login
-* Developer Secret Authentication
-* Manage Admin Accounts
-* Block / Delete Admins
-* View All Registered Admins
-* Student Accounts Hidden from Developer Panel
+## 🔐 Login Page
+
+![Login](screenshots/login.png)
+
+---
+
+## 📝 Register Page
+
+![Register](screenshots/register.png)
+
+---
+
+## 👨‍🎓 Student Dashboard
+
+![Student Dashboard](screenshots/student-dashboard.png)
+
+---
+
+## 👨‍🏫 Admin Dashboard
+
+![Admin Dashboard](screenshots/admin-dashboard.png)
+
+---
+
+## 👨‍💻 Developer Dashboard
+
+![Developer Dashboard](screenshots/developer-dashboard.png)
+
+---
+
+## ✍️ Writing Practice
+
+![Writing Practice](screenshots/writing-practice.png)
+
+---
+
+## 📚 Fill in the Blanks
+
+![Fill Mode](screenshots/fill-mode.png)
+
+---
+
+## 🌍 Hindi to English
+
+![Hindi Mode](screenshots/hindi-mode.png)
+
+---
+
+## 👥 Group Discussion
+
+![Group Discussion](screenshots/group-discussion.png)
+
+---
+
+## 🏆 Leaderboard
+
+![Leaderboard](screenshots/leaderboard.png)
+
+---
+
+# 🎥 Project Demo
+
+> Add your screen recording GIF here.
+
+![Demo GIF](screenshots/demo.gif)
+
+---
+
+# ✨ Features
+
+## 👨‍🎓 Student
+
+- Secure Login & Registration
+- Email Verification
+- Permanent Admin ID Registration
+- Fill in the Blanks
+- Hindi to English Practice
+- Writing Practice
+- AI Writing Feedback
+- Daily Progress
+- Level-wise Progress
+- Account Settings
+- Group Discussion
+
+---
+
+## 👨‍🏫 Admin
+
+- Permanent 8-Digit Admin ID
+- Question Management
+- Student Analytics
+- Daily Reports
+- Leaderboard
+- Groups & Batches
+- Block / Unblock Students
+
+---
+
+## 👨‍💻 Developer
+
+- Hidden Developer Login
+- Secret Authentication
+- Manage Admins
+- Delete Admin
+- Block Admin
 
 ---
 
 # 🏗️ Tech Stack
 
-| Category          | Technology                 |
-| ----------------- | -------------------------- |
-| Frontend          | React.js                   |
-| Styling           | Tailwind CSS               |
-| Authentication    | Firebase Authentication    |
-| Database          | Cloud Firestore            |
-| Realtime Features | Firebase Realtime Database |
-| AI                | Google Gemini API          |
-| Routing           | React Router               |
-| State Management  | React Hooks                |
+| Category | Technology |
+|----------|------------|
+| Frontend | React.js |
+| Styling | Tailwind CSS |
+| Authentication | Firebase Authentication |
+| Database | Firestore |
+| Realtime | Firebase Realtime Database |
+| AI | Google Gemini |
+| Routing | React Router |
+| Deployment | Vercel |
 
 ---
 
-# 📂 Project Structure
+# 📂 Folder Structure
 
-```
+```text
 english-practice/
-│
-├── public/
-│   └── index.html
-│
-├── src/
-│   ├── App.jsx
-│   ├── index.js
-│   ├── keys.js
-│   │
-│   ├── hooks/
-│   │   └── useAuth.js
-│   │
-│   ├── data/
-│   │   └── questions.js
-│   │
-│   ├── utils/
-│   │   ├── setup.js
-│   │   ├── auth.js
-│   │   ├── ai.js
-│   │   ├── progress.js
-│   │   └── store.js
-│   │
-│   └── components/
-│       ├── auth/
-│       ├── student/
-│       ├── admin/
-│       ├── developer/
-│       └── shared/
-│
-└── package.json
+
+public/
+
+src/
+
+components/
+
+student/
+
+admin/
+
+developer/
+
+shared/
+
+utils/
+
+hooks/
+
+data/
+
+README.md
 ```
 
 ---
 
 # 🔐 Authentication Flow
 
-```
+```text
 Developer
       │
       ▼
 Create Admin
       │
       ▼
-Admin receives Permanent 8-Digit ID
+Admin receives Permanent ID
       │
       ▼
-Student registers using Admin ID
+Student Registration
       │
       ▼
 Email Verification
-      │
-      ▼
-Login
       │
       ▼
 Dashboard
@@ -133,47 +222,43 @@ Dashboard
 
 ---
 
-# 📊 Dashboard Overview
+# 🤖 AI Features
+
+- Grammar Checking
+- Writing Evaluation
+- Sentence Improvement
+- English Suggestions
+- AI Feedback
+
+---
+
+# 📊 Dashboard Features
 
 ## Student Dashboard
 
-* Today's Score
-* Overall Score
-* Level-wise Progress
-* AI Feedback
-* Practice History
-* Group Discussion
+- Today's Score
+- Total Score
+- Level-wise Progress
+- Writing Feedback
+- Practice History
 
 ---
 
 ## Admin Dashboard
 
-* Student Analytics
-* Today's Performance
-* Overall Performance
-* Question Management
-* Top 3 Students
-* Group Manager
-* Announcements
+- Student Analytics
+- Today's Reports
+- Top 3 Students
+- Question Manager
+- Group Manager
 
 ---
 
 ## Developer Dashboard
 
-* Admin Management
-* Admin Monitoring
-* Account Control
-
----
-
-# 🤖 AI Features
-
-Google Gemini AI is used to:
-
-* Evaluate Writing
-* Improve Grammar
-* Suggest Better Sentences
-* Provide Writing Feedback
+- Admin Monitoring
+- Account Management
+- Security Control
 
 ---
 
@@ -182,13 +267,13 @@ Google Gemini AI is used to:
 ## Clone Repository
 
 ```bash
-git clone https://github.com/Java-Bhagwan/english-practice.git
+git clone YOUR_GITHUB_REPOSITORY
 ```
 
-## Move into Project
+## Open Folder
 
 ```bash
-cd english-practice
+cd English-Speaking-Practice-App
 ```
 
 ## Install Dependencies
@@ -197,7 +282,7 @@ cd english-practice
 npm install
 ```
 
-## Start Development Server
+## Start Project
 
 ```bash
 npm start
@@ -205,114 +290,85 @@ npm start
 
 ---
 
-# 🔑 Configuration
+# 🔑 Environment Variables
 
-Create a **src/keys.js** file.
+Create **src/keys.js**
 
 ```javascript
-export const GEMINI_KEY = "YOUR_GEMINI_API_KEY";
+export const GEMINI_KEY="YOUR_GEMINI_API_KEY";
 
-export const FB = {
-  apiKey:"",
-  authDomain:"",
-  projectId:"",
-  storageBucket:"",
-  messagingSenderId:"",
-  appId:"",
-  databaseURL:""
-};
+export const FB={
+ apiKey:"",
+ authDomain:"",
+ projectId:"",
+ storageBucket:"",
+ messagingSenderId:"",
+ appId:"",
+ databaseURL:""
+}
 
-export const DEV_SECRET = "YOUR_DEVELOPER_SECRET";
+export const DEV_SECRET="YOUR_SECRET_KEY";
 ```
 
 ---
 
-# 👨‍💻 First Time Setup
+# 📈 Firebase Collections
 
-## Step 1
+```text
+users
 
-Create Developer Account
+admins
 
-↓
+questions
 
-## Step 2
+progress
 
-Create Admin Account
+attempts
 
-↓
+groups
 
-## Step 3
+leaderboard
 
-Admin receives Permanent 8-Digit ID
-
-↓
-
-## Step 4
-
-Students register using Admin ID
-
-↓
-
-## Step 5
-
-Students start practicing English
+announcements
+```
 
 ---
 
-# 📈 Student Analytics
+# 📌 Roadmap
 
-Admin can monitor:
-
-* Total Attempted Questions
-* Total Correct Answers
-* Today's Attempts
-* Today's Correct Answers
-* Beginner Score
-* Intermediate Score
-* Advanced Score
-* Daily Top 3 Students
-
----
-
-# 🏆 Leaderboard
-
-Every day the application automatically displays:
-
-🥇 Rank 1
-
-🥈 Rank 2
-
-🥉 Rank 3
-
-based on today's correct answers.
+- Voice Practice
+- Pronunciation Checker
+- AI Speaking Test
+- Chat with AI Teacher
+- Daily Challenges
+- Certificates
+- Notifications
+- Mobile App
+- Dark Mode
 
 ---
 
-# ⚠️ Common Errors
+# 🤝 Contributing
 
-| Error                  | Solution                                  |
-| ---------------------- | ----------------------------------------- |
-| Blank Screen           | Check Firebase configuration in `keys.js` |
-| Invalid Admin ID       | Enter a valid 8-digit Admin ID            |
-| Login Failed           | Verify email before login                 |
-| AI Not Working         | Verify Gemini API Key                     |
-| Password Update Failed | Enter the current password correctly      |
+Contributions are welcome.
+
+1. Fork Repository
+
+2. Create Branch
+
+3. Commit Changes
+
+4. Push
+
+5. Create Pull Request
 
 ---
 
-# 🔮 Future Improvements
+# ⭐ Show Your Support
 
-* Voice Conversation Practice
-* Pronunciation Checker
-* Speaking Test
-* AI Chat Teacher
-* Daily Challenges
-* Achievement Badges
-* Certificates
-* Push Notifications
-* Dark Mode
-* Mobile Application
-* Live Video Speaking Room
+If you like this project,
+
+please ⭐ this repository.
 
 ---
 
@@ -320,15 +376,17 @@ based on today's correct answers.
 
 **Raja**
 
-GitHub: **Java-Bhagwan**
+📂 GitHub
 
----
+YOUR_GITHUB_PROFILE
 
-# ⭐ Support
+💼 LinkedIn
 
-If you found this project helpful, please consider giving it a ⭐ on GitHub.
+YOUR_LINKEDIN_PROFILE
 
-It helps others discover the project and motivates future development.
+🌐 Portfolio
+
+YOUR_PORTFOLIO_LINK
 
 ---
 
