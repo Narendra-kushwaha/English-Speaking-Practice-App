@@ -133,7 +133,7 @@ if (!q) {
         {q.options?.map(opt => {
           const optCorrect = opt?.trim().toLowerCase() === q.answer?.trim().toLowerCase();
           let bg="#1E293B", border="#334155", col="#94A3B8";
-          if (checked) { if (optCorrect) { bg="#14532D"; border="#22C55E"; col="#86EFAC"; } else if (opt===selected) { bg="#450A0A"; border="#EF4444"; col="#FCA5A5"; } }
+          if (checked) { if (optCorrect && locked) { bg="#14532D"; border="#22C55E"; col="#86EFAC"; } else if (opt===selected) { bg="#450A0A"; border="#EF4444"; col="#FCA5A5"; } }
           else if (opt===selected) { bg=`${lc.accent}22`; border=lc.accent; col=lc.accent; }
           return <button key={opt} onClick={()=>!checked&&!locked&&setSelected(opt)} disabled={checked||locked} style={{ padding:"14px 10px", borderRadius:11, border:`2px solid ${border}`, background:bg, color:col, fontWeight:700, fontSize:15, cursor:(checked||locked)?"default":"pointer", width:"100%" }}>{opt}</button>;
         })}
