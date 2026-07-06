@@ -1,395 +1,1090 @@
-# 📚 English Practice App
+<div align="center">
 
-<p align="center">
+# 📚 SpeakEase – AI Powered English Practice App
 
-<img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react"/>
-<img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase"/>
-<img src="https://img.shields.io/badge/TailwindCSS-06B6D4?style=for-the-badge&logo=tailwindcss"/>
-<img src="https://img.shields.io/badge/Google%20Gemini-AI-8E75FF?style=for-the-badge"/>
-<img src="https://img.shields.io/badge/License-MIT-success?style=for-the-badge"/>
+### 🚀 Learn • Practice • Improve • Track
 
-</p>
+An AI-powered English Learning Platform built with **React.js**, **Firebase**, **Tailwind CSS**, and **Google Gemini AI**.
 
-<h3 align="center">
-An AI-Powered English Learning Platform built with React, Firebase & Google Gemini AI.
-</h3>
+Practice English through interactive exercises, AI-powered writing evaluation, progress tracking, real-time collaboration, and role-based dashboards.
 
-<p align="center">
-Practice English through interactive exercises, AI-powered writing evaluation, progress tracking, analytics, and real-time collaboration.
-</p>
+<br>
 
----
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Visit_Now-3b82f6?style=for-the-badge)](https://getspeakease.vercel.app/)
 
-## 🔗 Quick Links
+[![GitHub](https://img.shields.io/badge/📂_Source_Code-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/Narendra-kushwaha/English-Speaking-Practice-App)
 
-<p align="center">
+<br>
 
-<a href="🔗 YOUR_LIVE_DEMO_LINK">
-<img src="https://img.shields.io/badge/🌐_Live_Demo-Visit-blue?style=for-the-badge">
-</a>
+![React](https://img.shields.io/badge/React-18-blue?style=flat-square&logo=react)
 
-<a href="🔗 YOUR_GITHUB_REPOSITORY">
-<img src="https://img.shields.io/badge/📂_GitHub-Repository-black?style=for-the-badge">
-</a>
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black)
 
-<a href="🔗 YOUR_PORTFOLIO_LINK">
-<img src="https://img.shields.io/badge/🌍_Portfolio-Visit-success?style=for-the-badge">
-</a>
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat-square&logo=tailwindcss)
 
-<a href="🔗 YOUR_LINKEDIN_LINK">
-<img src="https://img.shields.io/badge/LinkedIn-Profile-0A66C2?style=for-the-badge&logo=linkedin">
-</a>
+![Gemini AI](https://img.shields.io/badge/Google-Gemini_AI-8E75FF?style=flat-square)
 
-</p>
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6-yellow?style=flat-square&logo=javascript)
+
+![MIT License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+
+</div>
 
 ---
 
-# 📸 Screenshots
+# 📖 Table of Contents
 
-## 🔐 Login Page
-
-![Login](screenshots/login.png)
-
----
-
-## 📝 Register Page
-
-![Register](screenshots/register.png)
-
----
-
-## 👨‍🎓 Student Dashboard
-
-![Student Dashboard](screenshots/student-dashboard.png)
-
----
-
-## 👨‍🏫 Admin Dashboard
-
-![Admin Dashboard](screenshots/admin-dashboard.png)
+- 🌟 About Project
+- ✨ Features
+- 👥 User Roles
+- 📸 Screenshots
+- 🛠 Tech Stack
+- 📂 Project Structure
+- 🚀 Installation
+- 🔑 Environment Variables
+- 🔐 Authentication Flow
+- 📊 Dashboard Overview
+- 🤖 AI Features
+- 📈 Analytics
+- ⚠️ Common Errors
+- 🛣 Roadmap
+- 👨‍💻 Author
+- 📄 License
 
 ---
 
-## 👨‍💻 Developer Dashboard
+# 🌟 About the Project
 
-![Developer Dashboard](screenshots/developer-dashboard.png)
+SpeakEase is a modern AI-powered English learning platform designed to help students improve their English communication skills through interactive practice sessions, AI-assisted writing evaluation, and detailed performance analytics.
 
----
+Unlike traditional practice websites, SpeakEase provides **role-based dashboards** for Students, Admins, and Developers, making it suitable for coaching institutes, schools, English learning communities, and individual learners.
 
-## ✍️ Writing Practice
-
-![Writing Practice](screenshots/writing-practice.png)
+The platform combines **Firebase Authentication**, **Cloud Firestore**, **Realtime Database**, and **Google Gemini AI** to deliver a secure, scalable, and intelligent learning experience.
 
 ---
 
-## 📚 Fill in the Blanks
+# 🚀 Why SpeakEase?
 
-![Fill Mode](screenshots/fill-mode.png)
+✔ AI-powered Writing Feedback
+
+✔ Fill in the Blanks Practice
+
+✔ Hindi to English Translation
+
+✔ Writing Practice
+
+✔ Daily Progress Tracking
+
+✔ Permanent Admin ID
+
+✔ Student Analytics
+
+✔ Group Discussions
+
+✔ Top 3 Leaderboard
+
+✔ Role-Based Authentication
+
+✔ Secure Firebase Backend
+
+✔ Responsive UI
 
 ---
 
-## 🌍 Hindi to English
+# 👥 User Roles
 
-![Hindi Mode](screenshots/hindi-mode.png)
-
----
-
-## 👥 Group Discussion
-
-![Group Discussion](screenshots/group-discussion.png)
-
----
-
-## 🏆 Leaderboard
-
-![Leaderboard](screenshots/leaderboard.png)
-
----
-
-# 🎥 Project Demo
-
-> Add your screen recording GIF here.
-
-![Demo GIF](screenshots/demo.gif)
+| Role | Description |
+|------|-------------|
+| 👨‍🎓 Student | Practice English, track progress, join discussions, receive AI feedback |
+| 👨‍🏫 Admin | Manage students, create questions, monitor analytics, manage groups |
+| 👨‍💻 Developer | Manage admin accounts, monitor platform, control administration |
 
 ---
 
 # ✨ Features
 
-## 👨‍🎓 Student
+## 👨‍🎓 Student Features
 
-- Secure Login & Registration
+- Secure Email Authentication
 - Email Verification
-- Permanent Admin ID Registration
+- Register using Permanent Admin ID
 - Fill in the Blanks
-- Hindi to English Practice
+- Hindi → English Practice
 - Writing Practice
-- AI Writing Feedback
+- AI Writing Evaluation
 - Daily Progress
+- Total Score
 - Level-wise Progress
-- Account Settings
+- Accuracy Tracking
 - Group Discussion
+- Account Settings
+- Change Password
+- Change Email
+- Change Mobile Number
 
 ---
 
-## 👨‍🏫 Admin
+## 👨‍🏫 Admin Features
 
 - Permanent 8-Digit Admin ID
-- Question Management
+- Question Manager
+- Student Manager
 - Student Analytics
-- Daily Reports
-- Leaderboard
-- Groups & Batches
+- Today's Performance
+- Total Performance
+- Level-wise Reports
+- Top 3 Leaderboard
 - Block / Unblock Students
+- Group Discussion
+- Batch Management
+- Account Settings
 
 ---
 
-## 👨‍💻 Developer
+## 👨‍💻 Developer Features
 
 - Hidden Developer Login
 - Secret Authentication
-- Manage Admins
-- Delete Admin
-- Block Admin
+- View All Admins
+- Manage Admin Accounts
+- Block / Unblock Admins
+- Account Settings
 
 ---
 
-# 🏗️ Tech Stack
+# 📸 Screenshots
+
+## 🔐 Authentication
+
+| Student Login | Student Registration |
+|----------------|----------------------|
+| ![](screenshots/student-login.png) | ![](screenshots/student-register.png) |
+
+---
+
+## 👨‍🎓 Student Dashboard
+
+![](screenshots/student-dashboard.png)
+
+---
+
+## 📚 Practice Modes
+
+| Fill in the Blanks | Hindi → English |
+|--------------------|-----------------|
+| ![](screenshots/fill-blanks.png) | ![](screenshots/hindi-english.png) |
+
+---
+
+### ✍ Writing Practice
+
+![](screenshots/writing-practice.png)
+
+---
+
+## 👨‍🏫 Admin Dashboard
+
+![](screenshots/admin-dashboard.png)
+
+---
+
+## 📋 Question Manager
+
+![](screenshots/question-manager.png)
+
+---
+
+## 👨‍🎓 Student Manager
+
+![](screenshots/student-manager.png)
+
+---
+
+## 💬 Group Discussion
+
+![](screenshots/group-discussion.png)
+
+---
+
+## ⚙ Account Settings
+
+![](screenshots/account-settings.png)
+
+---
+
+## 👨‍💻 Developer Dashboard
+
+![](screenshots/developer-dashboard.png)
+
+---
+
+## 🛡 All Admins
+
+![](screenshots/all-admins.png)
+
+---
+
+# 🛠 Tech Stack
 
 | Category | Technology |
 |----------|------------|
 | Frontend | React.js |
 | Styling | Tailwind CSS |
 | Authentication | Firebase Authentication |
-| Database | Firestore |
-| Realtime | Firebase Realtime Database |
-| AI | Google Gemini |
-| Routing | React Router |
+| Database | Cloud Firestore |
+| Realtime Database | Firebase Realtime Database |
+| AI Integration | Google Gemini AI |
+| Routing | React Router DOM |
+| State Management | React Hooks |
 | Deployment | Vercel |
+| Version Control | Git & GitHub |
 
 ---
 
-# 📂 Folder Structure
+# 🏗 Project Architecture
+
+```text
+                    +----------------------+
+                    |      React App       |
+                    +----------+-----------+
+                               |
+             +-----------------+-----------------+
+             |                                   |
+      Firebase Authentication            Google Gemini AI
+             |                                   |
+             |                          Writing Feedback
+             |
+    +--------+---------+
+    |                  |
+ Cloud Firestore   Realtime Database
+    |                  |
+ Users / Questions   Group Discussions
+ Progress            Live Chat
+ Analytics
+```
+
+---
+
+# 📂 Project Structure
 
 ```text
 english-practice/
-
-public/
-
-src/
-
-components/
-
-student/
-
-admin/
-
-developer/
-
-shared/
-
-utils/
-
-hooks/
-
-data/
-
-README.md
+│
+├── public/
+│   └── index.html
+│
+├── src/
+│   ├── App.jsx
+│   ├── index.js
+│   ├── keys.js
+│   │
+│   ├── hooks/
+│   │   └── useAuth.js
+│   │
+│   ├── data/
+│   │   └── questions.js
+│   │
+│   ├── utils/
+│   │   ├── setup.js
+│   │   ├── auth.js
+│   │   ├── ai.js
+│   │   ├── progress.js
+│   │   └── store.js
+│   │
+│   └── components/
+│       ├── auth/
+│       ├── student/
+│       ├── admin/
+│       ├── developer/
+│       └── shared/
+│
+├── screenshots/
+│
+├── package.json
+│
+└── README.md
 ```
 
 ---
 
-# 🔐 Authentication Flow
+# 🚀 Getting Started
 
-```text
-Developer
-      │
-      ▼
-Create Admin
-      │
-      ▼
-Admin receives Permanent ID
-      │
-      ▼
-Student Registration
-      │
-      ▼
-Email Verification
-      │
-      ▼
-Dashboard
-```
-
----
-
-# 🤖 AI Features
-
-- Grammar Checking
-- Writing Evaluation
-- Sentence Improvement
-- English Suggestions
-- AI Feedback
-
----
-
-# 📊 Dashboard Features
-
-## Student Dashboard
-
-- Today's Score
-- Total Score
-- Level-wise Progress
-- Writing Feedback
-- Practice History
-
----
-
-## Admin Dashboard
-
-- Student Analytics
-- Today's Reports
-- Top 3 Students
-- Question Manager
-- Group Manager
-
----
-
-## Developer Dashboard
-
-- Admin Monitoring
-- Account Management
-- Security Control
-
----
-
-# 🚀 Installation
-
-## Clone Repository
+## 1️⃣ Clone the Repository
 
 ```bash
-git clone YOUR_GITHUB_REPOSITORY
+git clone https://github.com/Narendra-kushwaha/English-Speaking-Practice-App.git
 ```
 
-## Open Folder
+---
+
+## 2️⃣ Navigate to Project Folder
 
 ```bash
 cd English-Speaking-Practice-App
 ```
 
-## Install Dependencies
+---
+
+## 3️⃣ Install Dependencies
 
 ```bash
 npm install
 ```
 
-## Start Project
+---
+
+## 4️⃣ Start Development Server
 
 ```bash
 npm start
+```
+
+Application will run at:
+
+```
+http://localhost:3000
 ```
 
 ---
 
 # 🔑 Environment Variables
 
-Create **src/keys.js**
+Create a file named:
+
+```text
+src/keys.js
+```
+
+Add the following configuration:
 
 ```javascript
-export const GEMINI_KEY="YOUR_GEMINI_API_KEY";
+export const GEMINI_KEY = "YOUR_GEMINI_API_KEY";
 
-export const FB={
- apiKey:"",
- authDomain:"",
- projectId:"",
- storageBucket:"",
- messagingSenderId:"",
- appId:"",
- databaseURL:""
-}
+export const FB = {
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: "",
+  databaseURL: ""
+};
 
-export const DEV_SECRET="YOUR_SECRET_KEY";
+export const DEV_SECRET = "YOUR_DEVELOPER_SECRET";
 ```
 
 ---
 
-# 📈 Firebase Collections
+# 🔥 Firebase Setup
+
+## Step 1
+
+Create Firebase Project
+
+```
+Firebase Console
+      ↓
+Add Project
+      ↓
+Create
+```
+
+---
+
+## Step 2
+
+Enable Authentication
+
+```
+Authentication
+      ↓
+Get Started
+      ↓
+Email/Password
+      ↓
+Enable
+```
+
+---
+
+## Step 3
+
+Create Firestore Database
+
+```
+Firestore Database
+      ↓
+Create Database
+      ↓
+Test Mode
+```
+
+---
+
+## Step 4
+
+Create Realtime Database
+
+```
+Realtime Database
+      ↓
+Create Database
+      ↓
+Test Mode
+```
+
+---
+
+## Step 5
+
+Register Web App
+
+```
+Project Settings
+      ↓
+Add Web App
+      ↓
+Copy Firebase Config
+```
+
+Paste the configuration inside:
 
 ```text
-users
+src/keys.js
+```
 
-admins
+---
+
+# 🤖 Google Gemini AI Setup
+
+## Step 1
+
+Visit
+
+```
+https://aistudio.google.com/app/apikey
+```
+
+---
+
+## Step 2
+
+Generate a new API Key.
+
+---
+
+## Step 3
+
+Paste it into:
+
+```javascript
+export const GEMINI_KEY = "YOUR_API_KEY";
+```
+
+---
+
+# ⚙ First Time Setup
+
+```text
+Developer Registration
+          │
+          ▼
+Developer Login
+          │
+          ▼
+Create Admin
+          │
+          ▼
+Admin Receives Permanent Admin ID
+          │
+          ▼
+Student Registration
+          │
+          ▼
+Email Verification
+          │
+          ▼
+Student Login
+          │
+          ▼
+Practice English
+```
+
+---
+
+# 📦 Production Build
+
+Create an optimized production build:
+
+```bash
+npm run build
+```
+
+---
+
+# ☁ Deployment
+
+The application is deployed on **Vercel**.
+
+To deploy your own version:
+
+```bash
+npm install -g vercel
+```
+
+```bash
+vercel
+```
+
+Follow the on-screen instructions to complete deployment.
+
+---
+
+# 📱 Browser Support
+
+✅ Google Chrome
+
+✅ Microsoft Edge
+
+✅ Mozilla Firefox
+
+✅ Brave Browser
+
+✅ Opera
+
+---
+
+# 🔒 Security Features
+
+- Firebase Authentication
+- Email Verification
+- Protected Routes
+- Role-Based Access Control
+- Permanent Admin ID Verification
+- Developer Secret Authentication
+- Secure Firestore Access
+- Current Password Verification for Sensitive Changes
+
+---
+
+# 🔐 Authentication Flow
+
+```text
+                    👨‍💻 Developer
+                           │
+                           ▼
+              Register using Developer Secret
+                           │
+                           ▼
+                   Developer Dashboard
+                           │
+                           ▼
+                  Create / Manage Admins
+                           │
+                           ▼
+             👨‍🏫 Admin Registration
+                           │
+                           ▼
+        Permanent 8-Digit Admin ID Generated
+                           │
+                           ▼
+              👨‍🎓 Student Registration
+             (Using Admin's Permanent ID)
+                           │
+                           ▼
+                Email Verification Required
+                           │
+                           ▼
+                      Student Login
+                           │
+                           ▼
+                  Student Dashboard
+```
+
+---
+
+# 📊 Dashboard Overview
+
+## 👨‍🎓 Student Dashboard
+
+The Student Dashboard provides a complete overview of the learner's progress and performance.
+
+### Features
+
+- 🏆 Total Score
+- 📅 Today's Performance
+- 📈 Accuracy Percentage
+- 🎯 Attempted Questions
+- ✅ Correct Answers
+- ❌ Wrong Answers
+- 📚 Level-wise Progress
+- 📝 Practice Modes
+- 💬 Group Discussion
+- ⚙ Account Settings
+
+---
+
+## 👨‍🏫 Admin Dashboard
+
+The Admin Dashboard helps instructors monitor students and manage learning resources.
+
+### Features
+
+- 🔑 Permanent Admin ID
+- 📚 Question Manager
+- 👨‍🎓 Student Manager
+- 📊 Student Analytics
+- 🥇 Daily Top 3 Students
+- 💬 Group Discussion
+- ⚙ Account Settings
+
+---
+
+## 👨‍💻 Developer Dashboard
+
+The Developer Dashboard provides administrative control over the platform.
+
+### Features
+
+- 👨‍🏫 View All Admins
+- 🚫 Block / Unblock Admins
+- 🔒 Developer Authentication
+- ⚙ Account Settings
+
+---
+
+# 📚 Practice Modes
+
+## 🔤 Fill in the Blanks
+
+Students complete English sentences by selecting the correct option.
+
+### Highlights
+
+- Multiple Choice Questions
+- Instant Result
+- Score Tracking
+- Level-wise Questions
+- Grammar Hints
+- Progress Update
+
+---
+
+## 🌍 Hindi → English
+
+Students translate Hindi sentences into English.
+
+### Highlights
+
+- Translation Practice
+- Grammar Improvement
+- Vocabulary Building
+- Instant Evaluation
+- Level-wise Questions
+
+---
+
+## ✍ Writing Practice
+
+Students write English paragraphs based on Hindi prompts.
+
+Google Gemini AI analyzes the response and provides intelligent feedback.
+
+### AI Feedback Includes
+
+- Grammar Corrections
+- Better Sentence Formation
+- Vocabulary Suggestions
+- Writing Quality
+- Overall Feedback
+
+---
+
+# 🤖 AI Features
+
+SpeakEase uses **Google Gemini AI** to make learning smarter.
+
+### AI Capabilities
+
+- Grammar Checking
+- Writing Evaluation
+- Sentence Improvement
+- Writing Suggestions
+- Constructive Feedback
+
+---
+
+# 📈 Student Analytics
+
+Each student's progress is automatically tracked.
+
+## Overall Statistics
+
+- Total Questions Attempted
+- Total Correct Answers
+- Total Wrong Answers
+- Overall Accuracy
+- Total Score
+
+---
+
+## Daily Statistics
+
+- Today's Attempts
+- Today's Correct Answers
+- Today's Wrong Answers
+- Daily Accuracy
+
+---
+
+## Level-wise Analytics
+
+### 🌱 Beginner
+
+- Attempted
+- Correct
+- Progress
+
+### 🔥 Intermediate
+
+- Attempted
+- Correct
+- Progress
+
+### ⚡ Advanced
+
+- Attempted
+- Correct
+- Progress
+
+---
+
+# 🏆 Daily Leaderboard
+
+Admins can view the Top 3 students based on today's performance.
+
+Ranking is automatically generated using:
+
+- Correct Answers
+- Daily Performance
+- Accuracy
+
+Displayed as:
+
+🥇 Rank 1
+
+🥈 Rank 2
+
+🥉 Rank 3
+
+---
+
+# 💬 Group Discussion
+
+Students can participate in group discussions created by their Admin.
+
+### Features
+
+- Batch-wise Groups
+- Real-time Messaging
+- Student Name Visibility
+- Private Progress
+- Secure Communication
+
+---
+
+# 📂 Firebase Collections
+
+```text
+Firestore
+
+users
+│
+├── student
+├── admin
+└── developer
 
 questions
+│
+├── beginner
+├── intermediate
+└── advanced
 
 progress
 
 attempts
 
 groups
-
-leaderboard
-
-announcements
 ```
 
 ---
 
-# 📌 Roadmap
+# 🔄 Data Flow
 
-- Voice Practice
-- Pronunciation Checker
-- AI Speaking Test
-- Chat with AI Teacher
-- Daily Challenges
-- Certificates
-- Notifications
-- Mobile App
-- Dark Mode
+```text
+Student
+     │
+     ▼
+Practice Question
+     │
+     ▼
+Answer Submission
+     │
+     ▼
+Firestore
+     │
+     ▼
+Progress Updated
+     │
+     ▼
+Dashboard Updated
+     │
+     ▼
+Leaderboard Updated
+```
+
+---
+
+# 🔒 Security
+
+The application uses multiple security layers.
+
+- Firebase Authentication
+- Email Verification
+- Role-Based Authorization
+- Protected Routes
+- Developer Secret
+- Permanent Admin ID Validation
+- Password Reauthentication
+- Firestore Access Control
+
+---
+
+# ⚠ Common Errors
+
+| Error | Cause | Solution |
+|--------|-------|----------|
+| Blank Screen | Firebase Config Missing | Check `keys.js` |
+| Invalid Admin ID | Wrong Admin ID | Enter a valid 8-digit ID |
+| Login Failed | Email Not Verified | Verify your email |
+| AI Feedback Not Working | Invalid Gemini API Key | Update API Key |
+| Password Change Failed | Incorrect Current Password | Re-enter the current password |
+| Firebase Permission Error | Firestore Rules | Check Firebase Rules |
+
+---
+
+# 💡 Best Practices
+
+- Verify email before logging in.
+- Keep your Firebase keys secure.
+- Never upload `keys.js` to GitHub.
+- Use environment variables for production.
+- Enable Firebase Security Rules before deployment.
+- Regularly back up Firestore data.
+- Rotate Developer Secret periodically.
+
+---
+
+# ⚡ Performance Optimizations
+
+- Lazy Loading Components
+- Optimized React Hooks
+- Firebase Real-time Updates
+- Efficient Firestore Queries
+- Responsive UI
+- Fast Page Navigation
+- Lightweight Component Structure
+
+---
+
+# 🛣️ Roadmap
+
+The following features are planned for future releases:
+
+- [ ] 🎙 Voice Practice Mode
+- [ ] 🔊 Pronunciation Checker
+- [ ] 🤖 AI Speaking Assistant
+- [ ] 📜 Downloadable Certificates
+- [ ] 🏅 Achievement Badges
+- [ ] 🔥 Daily Challenges
+- [ ] 📱 Android Application
+- [ ] 🍎 iOS Application
+- [ ] 🌙 Dark Mode
+- [ ] 🔔 Push Notifications
+- [ ] 📊 Advanced Analytics
+- [ ] 🎥 Live Speaking Room
+- [ ] 👥 Video Group Discussion
+- [ ] 🌍 Multi-language Support
+- [ ] 📈 Weekly & Monthly Reports
+
+---
+
+# 📈 Project Highlights
+
+✔ AI Powered English Learning
+
+✔ Three Role Based System
+
+✔ Firebase Authentication
+
+✔ Firestore Database
+
+✔ Realtime Group Discussion
+
+✔ Google Gemini AI Integration
+
+✔ Student Progress Tracking
+
+✔ Daily Leaderboard
+
+✔ Responsive Design
+
+✔ Modern UI
+
+---
+
+# 🎯 Use Cases
+
+This project is suitable for:
+
+- English Coaching Institutes
+- Schools & Colleges
+- Individual Learners
+- Online English Trainers
+- Speaking Practice Communities
+- Educational Startups
+
+---
+
+# 🌍 Responsive Design
+
+The application is optimized for:
+
+- 💻 Desktop
+- 💼 Laptop
+- 📱 Mobile
+- 📟 Tablet
+
+---
+
+# 🚀 Deployment
+
+The application is deployed on **Vercel**.
+
+### Live Website
+
+🌐 https://getspeakease.vercel.app/
+
+---
+
+# 📦 Repository
+
+GitHub Repository
+
+https://github.com/Narendra-kushwaha/English-Speaking-Practice-App
 
 ---
 
 # 🤝 Contributing
 
-Contributions are welcome.
+Contributions are always welcome.
 
-1. Fork Repository
+If you'd like to improve this project:
 
-2. Create Branch
+1. Fork the repository
 
-3. Commit Changes
+2. Create a new feature branch
 
-4. Push
+```bash
+git checkout -b feature/YourFeature
+```
 
-5. Create Pull Request
+3. Commit your changes
+
+```bash
+git commit -m "Add new feature"
+```
+
+4. Push the branch
+
+```bash
+git push origin feature/YourFeature
+```
+
+5. Create a Pull Request
 
 ---
 
-# ⭐ Show Your Support
+# 🐞 Found a Bug?
 
-If you like this project,
+If you find any bug or want to suggest improvements,
 
-please ⭐ this repository.
+please create a new Issue in the GitHub repository.
 
 ---
 
-# 👨‍💻 Author
+# ⭐ Support
 
-**Raja**
+If you found this project useful,
 
-📂 GitHub
+please consider giving it a ⭐ Star.
 
-YOUR_GITHUB_PROFILE
+It motivates me to build more useful open-source projects.
+
+---
+
+# 📬 Contact
+
+### 👨‍💻 Developer
+
+**Raja Kushwaha**
+
+📧 Email
+
+YOUR_EMAIL_HERE
 
 💼 LinkedIn
 
-YOUR_LINKEDIN_PROFILE
+YOUR_LINKEDIN_URL
 
 🌐 Portfolio
 
-YOUR_PORTFOLIO_LINK
+YOUR_PORTFOLIO_URL
+
+🐙 GitHub
+
+https://github.com/Narendra-kushwaha
+
+---
+
+# 🙏 Acknowledgements
+
+Special thanks to:
+
+- React Team
+- Firebase Team
+- Google Gemini AI
+- Tailwind CSS
+- Open Source Community
 
 ---
 
 # 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the **MIT License**.
+
+You are free to use, modify, and distribute this project with proper attribution.
+
+---
+
+<div align="center">
+
+## 🌟 Thank You for Visiting!
+
+If you like this project,
+
+please don't forget to ⭐ the repository.
+
+### Made with ❤️ using React, Firebase & Google Gemini AI
+
+</div>
