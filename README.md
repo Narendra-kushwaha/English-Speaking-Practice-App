@@ -10,55 +10,23 @@ Practice English through interactive exercises, AI-powered writing evaluation, p
 
 <br>
 
-[
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Visit_Now-3b82f6?style=for-the-badge)](https://getspeakease.vercel.app/)
 
-![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Visit_Now-3b82f6?style=for-the-badge)
-
-](https://getspeakease.vercel.app/)
-
-[
-
-![GitHub](https://img.shields.io/badge/📂_Source_Code-GitHub-181717?style=for-the-badge&logo=github)
-
-](https://github.com/Narendra-kushwaha/English-Speaking-Practice-App)
+[![GitHub](https://img.shields.io/badge/📂_Source_Code-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/Narendra-kushwaha/English-Speaking-Practice-App)
 
 <br>
 
-
-
 ![React](https://img.shields.io/badge/React-18-blue?style=flat-square&logo=react)
-
-
-
-
 
 ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black)
 
-
-
-
-
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat-square&logo=tailwindcss)
-
-
-
-
 
 ![Groq AI](https://img.shields.io/badge/Groq-AI-F55036?style=flat-square)
 
-
-
-
-
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES6-yellow?style=flat-square&logo=javascript)
 
-
-
-
-
 ![MIT License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
-
-
 
 </div>
 
@@ -190,25 +158,13 @@ The platform combines **Firebase Authentication**, **Cloud Firestore**, **Realti
 
 | Student Login | Student Registration |
 |----------------|----------------------|
-| 
-
-![](screenshots/student-login.png)
-
- | 
-
-![](screenshots/student-register.png)
-
- |
+| ![](screenshots/student-login.png) | ![](screenshots/student-register.png) |
 
 ---
 
 ## 👨‍🎓 Student Dashboard
 
-
-
 ![](screenshots/student-dashboard.png)
-
-
 
 ---
 
@@ -216,95 +172,55 @@ The platform combines **Firebase Authentication**, **Cloud Firestore**, **Realti
 
 | Fill in the Blanks | Hindi → English |
 |--------------------|-----------------|
-| 
-
-![](screenshots/fill-blanks.png)
-
- | 
-
-![](screenshots/hindi-english.png)
-
- |
+| ![](screenshots/fill-blanks.png) | ![](screenshots/hindi-english.png) |
 
 ---
 
 ### ✍ Writing Practice
 
-
-
 ![](screenshots/writing-practice.png)
-
-
 
 ---
 
 ## 👨‍🏫 Admin Dashboard
 
-
-
 ![](screenshots/admin-dashboard.png)
-
-
 
 ---
 
 ## 📋 Question Manager
 
-
-
 ![](screenshots/question-manager.png)
-
-
 
 ---
 
 ## 👨‍🎓 Student Manager
 
-
-
 ![](screenshots/student-manager.png)
-
-
 
 ---
 
 ## 💬 Group Discussion
 
-
-
 ![](screenshots/group-discussion.png)
-
-
 
 ---
 
 ## ⚙ Account Settings
 
-
-
 ![](screenshots/account-settings.png)
-
-
 
 ---
 
 ## 👨‍💻 Developer Dashboard
 
-
-
 ![](screenshots/developer-dashboard.png)
-
-
 
 ---
 
 ## 🛡 All Admins
 
-
-
 ![](screenshots/all-admins.png)
-
-
 
 ---
 
@@ -328,23 +244,22 @@ The platform combines **Firebase Authentication**, **Cloud Firestore**, **Realti
 # 🏗 Project Architecture
 
 ```text
-                    +----------------------+
-                    |      React App       |
-                    +----------+-----------+
-                               |
-             +-----------------+-----------------+
-             |                                   |
-      Firebase Authentication              Groq AI
-             |                                   |
-             |                          Writing Feedback
-             |
-    +--------+---------+
-    |                  |
- Cloud Firestore   Realtime Database
-    |                  |
- Users / Questions   Group Discussions
- Progress            Live Chat
- Analytics
+                    +-----------------------+
+                    |       React App       |
+                    +-----------+-----------+
+                                |
+              +-----------------+-----------------+
+              |                                   |
+   Firebase Authentication                     Groq AI
+              |                            (Writing Feedback)
+              |
+    +---------+---------+
+    |                    |
+Cloud Firestore    Realtime Database
+    |                    |
+Users / Questions   Group Discussions
+Progress            Live Chat
+Analytics
 ```
 
 ---
@@ -399,17 +314,23 @@ english-practice/
 git clone https://github.com/Narendra-kushwaha/English-Speaking-Practice-App.git
 ```
 
+---
+
 ## 2️⃣ Navigate to Project Folder
 
 ```bash
 cd English-Speaking-Practice-App
 ```
 
+---
+
 ## 3️⃣ Install Dependencies
 
 ```bash
 npm install
 ```
+
+---
 
 ## 4️⃣ Start Development Server
 
@@ -467,6 +388,8 @@ Add Project
 Create
 ```
 
+---
+
 ## Step 2
 
 Enable Authentication
@@ -481,6 +404,8 @@ Email/Password
 Enable
 ```
 
+---
+
 ## Step 3
 
 Create Firestore Database
@@ -493,6 +418,8 @@ Create Database
 Test Mode
 ```
 
+---
+
 ## Step 4
 
 Create Realtime Database
@@ -504,6 +431,8 @@ Create Database
       ↓
 Test Mode
 ```
+
+---
 
 ## Step 5
 
@@ -531,9 +460,13 @@ Visit
 https://console.groq.com/keys
 ```
 
+---
+
 ## Step 2
 
 Generate a new API Key.
+
+---
 
 ## Step 3
 
@@ -549,32 +482,34 @@ REACT_APP_GROQ_KEY=YOUR_GROQ_API_KEY
 
 ```text
 Developer Registration
-          │
-          ▼
+        │
+        ▼
 Developer Login
-          │
-          ▼
+        │
+        ▼
 Create Admin
-          │
-          ▼
+        │
+        ▼
 Admin Receives Permanent Admin ID
-          │
-          ▼
+        │
+        ▼
 Student Registration
-          │
-          ▼
+        │
+        ▼
 Email Verification
-          │
-          ▼
+        │
+        ▼
 Student Login
-          │
-          ▼
+        │
+        ▼
 Practice English
 ```
 
 ---
 
 # 📦 Production Build
+
+Create an optimized production build:
 
 ```bash
 npm run build
@@ -585,6 +520,8 @@ npm run build
 # ☁ Deployment
 
 The application is deployed on **Vercel**.
+
+To deploy your own version:
 
 ```bash
 npm install -g vercel
@@ -628,35 +565,34 @@ Follow the on-screen instructions to complete deployment.
 # 🔐 Authentication Flow
 
 ```text
-                    👨‍💻 Developer
-                           │
-                           ▼
-              Register using Developer Secret
-                           │
-                           ▼
-                   Developer Dashboard
-                           │
-                           ▼
-                  Create / Manage Admins
-                           │
-                           ▼
-             👨‍🏫 Admin Registration
-                           │
-                           ▼
-        Permanent 8-Digit Admin ID Generated
-                           │
-                           ▼
-              👨‍🎓 Student Registration
-             (Using Admin's Permanent ID)
-                           │
-                           ▼
-                Email Verification Required
-                           │
-                           ▼
-                      Student Login
-                           │
-                           ▼
-                  Student Dashboard
+👨‍💻 Developer
+      │
+      ▼
+Register using Developer Secret
+      │
+      ▼
+Developer Dashboard
+      │
+      ▼
+Create / Manage Admins
+      │
+      ▼
+👨‍🏫 Admin Registration
+      │
+      ▼
+Permanent 8-Digit Admin ID Generated
+      │
+      ▼
+👨‍🎓 Student Registration (Using Admin's Permanent ID)
+      │
+      ▼
+Email Verification Required
+      │
+      ▼
+Student Login
+      │
+      ▼
+Student Dashboard
 ```
 
 ---
@@ -665,15 +601,49 @@ Follow the on-screen instructions to complete deployment.
 
 ## 👨‍🎓 Student Dashboard
 
-Features: 🏆 Total Score, 📅 Today's Performance, 📈 Accuracy Percentage, 🎯 Attempted Questions, ✅ Correct Answers, ❌ Wrong Answers, 📚 Level-wise Progress, 📝 Practice Modes, 💬 Group Discussion, ⚙ Account Settings
+The Student Dashboard provides a complete overview of the learner's progress and performance.
+
+### Features
+
+- 🏆 Total Score
+- 📅 Today's Performance
+- 📈 Accuracy Percentage
+- 🎯 Attempted Questions
+- ✅ Correct Answers
+- ❌ Wrong Answers
+- 📚 Level-wise Progress
+- 📝 Practice Modes
+- 💬 Group Discussion
+- ⚙ Account Settings
+
+---
 
 ## 👨‍🏫 Admin Dashboard
 
-Features: 🔑 Permanent Admin ID, 📚 Question Manager, 👨‍🎓 Student Manager, 📊 Student Analytics, 🥇 Daily Top 3 Students, 💬 Group Discussion, ⚙ Account Settings
+The Admin Dashboard helps instructors monitor students and manage learning resources.
+
+### Features
+
+- 🔑 Permanent Admin ID
+- 📚 Question Manager
+- 👨‍🎓 Student Manager
+- 📊 Student Analytics
+- 🥇 Daily Top 3 Students
+- 💬 Group Discussion
+- ⚙ Account Settings
+
+---
 
 ## 👨‍💻 Developer Dashboard
 
-Features: 👨‍🏫 View All Admins, 🚫 Block / Unblock Admins, 🔒 Developer Authentication, ⚙ Account Settings
+The Developer Dashboard provides administrative control over the platform.
+
+### Features
+
+- 👨‍🏫 View All Admins
+- 🚫 Block / Unblock Admins
+- 🔒 Developer Authentication
+- ⚙ Account Settings
 
 ---
 
@@ -681,45 +651,139 @@ Features: 👨‍🏫 View All Admins, 🚫 Block / Unblock Admins, 🔒 Develop
 
 ## 🔤 Fill in the Blanks
 
-Multiple Choice Questions, Instant Result, Score Tracking, Level-wise Questions, Grammar Hints, Progress Update
+Students complete English sentences by selecting the correct option.
+
+### Highlights
+
+- Multiple Choice Questions
+- Instant Result
+- Score Tracking
+- Level-wise Questions
+- Grammar Hints
+- Progress Update
+
+---
 
 ## 🌍 Hindi → English
 
-Translation Practice, Grammar Improvement, Vocabulary Building, Instant Evaluation, Level-wise Questions
+Students translate Hindi sentences into English.
+
+### Highlights
+
+- Translation Practice
+- Grammar Improvement
+- Vocabulary Building
+- Instant Evaluation
+- Level-wise Questions
+
+---
 
 ## ✍ Writing Practice
 
-Students write English paragraphs based on Hindi prompts. Groq AI analyzes the response and provides intelligent feedback: Grammar Corrections, Better Sentence Formation, Vocabulary Suggestions, Writing Quality, Overall Feedback
+Students write English paragraphs based on Hindi prompts.
+
+Groq AI analyzes the response and provides intelligent feedback.
+
+### AI Feedback Includes
+
+- Grammar Corrections
+- Better Sentence Formation
+- Vocabulary Suggestions
+- Writing Quality
+- Overall Feedback
 
 ---
 
 # 🤖 AI Features
 
-SpeakEase uses **Groq AI** to make learning smarter: Grammar Checking, Writing Evaluation, Sentence Improvement, Writing Suggestions, Constructive Feedback
+SpeakEase uses **Groq AI** to make learning smarter.
+
+### AI Capabilities
+
+- Grammar Checking
+- Writing Evaluation
+- Sentence Improvement
+- Writing Suggestions
+- Constructive Feedback
 
 ---
 
 # 📈 Student Analytics
 
-**Overall:** Total Questions Attempted, Total Correct Answers, Total Wrong Answers, Overall Accuracy, Total Score
+Each student's progress is automatically tracked.
 
-**Daily:** Today's Attempts, Today's Correct Answers, Today's Wrong Answers, Daily Accuracy
+## Overall Statistics
 
-**Level-wise:** 🌱 Beginner, 🔥 Intermediate, ⚡ Advanced — each with Attempted, Correct, Progress
+- Total Questions Attempted
+- Total Correct Answers
+- Total Wrong Answers
+- Overall Accuracy
+- Total Score
+
+---
+
+## Daily Statistics
+
+- Today's Attempts
+- Today's Correct Answers
+- Today's Wrong Answers
+- Daily Accuracy
+
+---
+
+## Level-wise Analytics
+
+### 🌱 Beginner
+
+- Attempted
+- Correct
+- Progress
+
+### 🔥 Intermediate
+
+- Attempted
+- Correct
+- Progress
+
+### ⚡ Advanced
+
+- Attempted
+- Correct
+- Progress
 
 ---
 
 # 🏆 Daily Leaderboard
 
-Admins can view the Top 3 students based on today's performance, ranked by Correct Answers, Daily Performance, and Accuracy.
+Admins can view the Top 3 students based on today's performance.
 
-🥇 Rank 1 · 🥈 Rank 2 · 🥉 Rank 3
+Ranking is automatically generated using:
+
+- Correct Answers
+- Daily Performance
+- Accuracy
+
+Displayed as:
+
+🥇 Rank 1
+
+🥈 Rank 2
+
+🥉 Rank 3
 
 ---
 
 # 💬 Group Discussion
 
-Batch-wise Groups, Real-time Messaging, Student Name Visibility, Private Progress, Secure Communication
+Students can participate in group discussions created by their Admin.
+
+### Features
+
+- Batch-wise Groups
+- Real-time Messaging
+- Student Name Visibility
+- Private Progress
+- Secure Communication
 
 ---
 
@@ -777,7 +841,16 @@ Leaderboard Updated
 
 # 🔒 Security
 
-Firebase Authentication, Email Verification, Role-Based Authorization, Protected Routes, Developer Secret, Permanent Admin ID Validation, Password Reauthentication, Firestore Access Control
+The application uses multiple security layers.
+
+- Firebase Authentication
+- Email Verification
+- Role-Based Authorization
+- Protected Routes
+- Developer Secret
+- Permanent Admin ID Validation
+- Password Reauthentication
+- Firestore Access Control
 
 ---
 
@@ -808,11 +881,19 @@ Firebase Authentication, Email Verification, Role-Based Authorization, Protected
 
 # ⚡ Performance Optimizations
 
-Lazy Loading Components, Optimized React Hooks, Firebase Real-time Updates, Efficient Firestore Queries, Responsive UI, Fast Page Navigation, Lightweight Component Structure
+- Lazy Loading Components
+- Optimized React Hooks
+- Firebase Real-time Updates
+- Efficient Firestore Queries
+- Responsive UI
+- Fast Page Navigation
+- Lightweight Component Structure
 
 ---
 
 # 🛣️ Roadmap
+
+The following features are planned for future releases:
 
 - [ ] 🎙 Voice Practice Mode
 - [ ] 🔊 Pronunciation Checker
@@ -834,29 +915,65 @@ Lazy Loading Components, Optimized React Hooks, Firebase Real-time Updates, Effi
 
 # 📈 Project Highlights
 
-✔ AI Powered English Learning ✔ Three Role Based System ✔ Firebase Authentication ✔ Firestore Database ✔ Realtime Group Discussion ✔ Groq AI Integration ✔ Student Progress Tracking ✔ Daily Leaderboard ✔ Responsive Design ✔ Modern UI
+✔ AI Powered English Learning
+
+✔ Three Role Based System
+
+✔ Firebase Authentication
+
+✔ Firestore Database
+
+✔ Realtime Group Discussion
+
+✔ Groq AI Integration
+
+✔ Student Progress Tracking
+
+✔ Daily Leaderboard
+
+✔ Responsive Design
+
+✔ Modern UI
 
 ---
 
 # 🎯 Use Cases
 
-English Coaching Institutes, Schools & Colleges, Individual Learners, Online English Trainers, Speaking Practice Communities, Educational Startups
+This project is suitable for:
+
+- English Coaching Institutes
+- Schools & Colleges
+- Individual Learners
+- Online English Trainers
+- Speaking Practice Communities
+- Educational Startups
 
 ---
 
 # 🌍 Responsive Design
 
-💻 Desktop · 💼 Laptop · 📱 Mobile · 📟 Tablet
+The application is optimized for:
+
+- 💻 Desktop
+- 💼 Laptop
+- 📱 Mobile
+- 📟 Tablet
 
 ---
 
 # 🚀 Deployment
 
-Live Website: 🌐 https://getspeakease.vercel.app/
+The application is deployed on **Vercel**.
+
+### Live Website
+
+🌐 https://getspeakease.vercel.app/
 
 ---
 
 # 📦 Repository
+
+GitHub Repository
 
 https://github.com/Narendra-kushwaha/English-Speaking-Practice-App
 
@@ -864,7 +981,12 @@ https://github.com/Narendra-kushwaha/English-Speaking-Practice-App
 
 # 🤝 Contributing
 
+Contributions are always welcome.
+
+If you'd like to improve this project:
+
 1. Fork the repository
+
 2. Create a new feature branch
 
 ```bash
@@ -889,39 +1011,63 @@ git push origin feature/YourFeature
 
 # 🐞 Found a Bug?
 
-Please create a new Issue in the GitHub repository.
+If you find any bug or want to suggest improvements,
+
+please create a new Issue in the GitHub repository.
 
 ---
 
 # ⭐ Support
 
-If you found this project useful, please consider giving it a ⭐ Star.
+If you found this project useful,
+
+please consider giving it a ⭐ Star.
+
+It motivates me to build more useful open-source projects.
 
 ---
 
 # 📬 Contact
 
+### 👨‍💻 Developer
+
 **Narendra Kushwaha**
 
-📧 narendra626315@gmail.com
+📧 Email
 
-💼 https://linkedin.com/in/narendra-kushwaha-38232a237
+narendra626315@gmail.com
 
-🌐 https://narendra-kushwaha-portfolio.vercel.app/
+💼 LinkedIn
 
-🐙 https://github.com/Narendra-kushwaha
+https://linkedin.com/in/narendra-kushwaha-38232a237
+
+🌐 Portfolio
+
+https://narendra-kushwaha-portfolio.vercel.app/
+
+🐙 GitHub
+
+https://github.com/Narendra-kushwaha
 
 ---
 
 # 🙏 Acknowledgements
 
-React Team, Firebase Team, Groq, Tailwind CSS, Open Source Community
+Special thanks to:
+
+- React Team
+- Firebase Team
+- Groq
+- Tailwind CSS
+- Open Source Community
 
 ---
 
 # 📄 License
 
-This project is licensed under the **MIT License**. You are free to use, modify, and distribute this project with proper attribution.
+This project is licensed under the **MIT License**.
+
+You are free to use, modify, and distribute this project with proper attribution.
 
 ---
 
@@ -929,7 +1075,9 @@ This project is licensed under the **MIT License**. You are free to use, modify,
 
 ## 🌟 Thank You for Visiting!
 
-If you like this project, please don't forget to ⭐ the repository.
+If you like this project,
+
+please don't forget to ⭐ the repository.
 
 ### Made with ❤️ using React, Firebase & Groq AI
 
