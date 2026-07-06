@@ -2,26 +2,31 @@ import { useState, useEffect, useRef } from "react";
 import { LC, S } from "../../data/questions";
 import { fsGet } from "../../utils/store";
 import { askAI, parseJSON } from "../../utils/ai";
-import { recordWritingSubmission } from "../../utils/progress";
+import { recordWritingSubmission, getProgress } from "../../utils/progress";
 import { Btn, Badge, TopBar } from "../shared/UI";
 
 export default function WritingMode({ level, onBack, uid, adminId }) {
   const lc = LC[level];
-  const [prompts, setPrompts]   = useState([]);
-  const [idx, setIdx]           = useState(0);
-  const [essay, setEssay]       = useState("");
-  const [feedback, setFeedback] = useState(null);
-  const [loading, setLoading]   = useState(false);
-  const [tab, setTab]           = useState("write");
-  const [timer, setTimer]       = useState(0);
-  const [timerOn, setTimerOn]   = useState(false);
+  const [prompts, setPrompts]     = useState([]);
+  const [idx, setIdx]             = useState(0);
+  const [essay, setEssay]         = useState("");
+  const [feedback, setFeedback]   = useState(null);
+  const [loading, setLoading]     = useState(false);
+  const [tab, setTab]             = useState("write");
+  const [timer, setTimer]         = useState(0);
+  const [timerOn, setTimerOn]     = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const timerRef = useRef(null);
 
   useEffect(() => {
     (async () => {
       const data  = await fsGet("questions", `q_${adminId}_writing_${level}`);
       const extra = data?.list || [];
-      setPrompts([...extra].sort(() => Math.random() - 0.5));
+      const all   = [...extra].sort(() => Math.random() - 0.5);
+      setPrompts(all);
+      setIdx(0);
+      const prog = await getProgress(uid);
+      checkSubmitted(prog, all[0]);
     })();
   }, [level, adminId]);
 
@@ -31,14 +36,38 @@ export default function WritingMode({ level, onBack, uid, adminId }) {
     return () => clearInterval(timerRef.current);
   }, [timerOn]);
 
+  function checkSubmitted(prog, prompt) {
+    if (!prompt) return;
+    const key = `writing_${level}_${prompt.id}`;
+    const state = prog?.lockedQuestions?.[key];
+    if (state?.locked) {
+      setSubmitted(true);
+      setTab("feedback");
+    } else {
+      setSubmitted(false);
+      setTab("write");
+      setEssay("");
+      setFeedback(null);
+      setTimer(0);
+      setTimerOn(false);
+    }
+  }
+
   const p   = prompts[idx % Math.max(prompts.length, 1)];
   const wc  = t => t.trim() === "" ? 0 : t.trim().split(/\s+/).length;
   const fmt = s => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
 
-  function next() { setEssay(""); setFeedback(null); setTab("write"); setTimer(0); setTimerOn(false); setIdx(i => i + 1); }
+  async function next() {
+    const newIdx = (idx + 1) % prompts.length;
+    setIdx(newIdx);
+    setEssay(""); setFeedback(null); setTab("write");
+    setTimer(0); setTimerOn(false);
+    const prog = await getProgress(uid);
+    checkSubmitted(prog, prompts[newIdx]);
+  }
 
   async function getFeedback() {
-    if (wc(essay) < 20 || loading) return;
+    if (wc(essay) < 20 || loading || submitted) return;
     setLoading(true); setFeedback(null); setTimerOn(false);
     try {
       const raw = await askAI(`You are an English writing coach for Hindi-medium students.
@@ -50,33 +79,24 @@ Respond ONLY with JSON: { "overall": "2-sentence feedback", "translation_accurac
       const fb = parseJSON(raw);
       if (fb) {
         setFeedback(fb); setTab("feedback");
+        setSubmitted(true);
         const pts = Math.max(0, Math.min(5, Math.round(fb.overall_score ?? 0)));
-        await recordWritingSubmission(uid, level, pts);
+        await recordWritingSubmission(uid, level, pts, p.id);
       }
     } catch { setFeedback({ error:true }); setTab("feedback"); }
     setLoading(false);
   }
 
-  // if (!p) return <div style={{ ...S.pg, display:"flex", alignItems:"center", justifyContent:"center" }}><div style={{ color:"#64748B" }}>Loading…</div></div>;
-
   if (prompts.length === 0) {
-  return (
-    <div
-      style={{
-        ...S.pg,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div style={{ color: "#64748B", textAlign: "center" }}>
-        <h3>No Writing questions available</h3>
-        <p>Please ask the admin to add Writing questions for {level} level.</p>
+    return (
+      <div style={{ ...S.pg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ color:"#64748B", textAlign:"center" }}>
+          <h3>No Writing questions available</h3>
+          <p>Please ask the admin to add Writing questions for {level} level.</p>
+        </div>
       </div>
-    </div>
-  );
-}
-
+    );
+  }
 
   return (
     <div style={S.pg}><div style={S.wrap}>
@@ -97,14 +117,31 @@ Respond ONLY with JSON: { "overall": "2-sentence feedback", "translation_accurac
 
       {tab === "write" && (
         <>
-          <textarea value={essay} onChange={e => { setEssay(e.target.value); if (!timerOn && e.target.value.length > 0) setTimerOn(true); }}
-            placeholder="Write the English version here… timer starts when you type."
-            style={{ width:"100%", minHeight:180, padding:16, fontSize:15, lineHeight:1.8, fontFamily:"Georgia,serif", background:"#1E293B", color:"#E2E8F0", border:`1.5px solid ${essay.length>0?lc.accent+"66":"#334155"}`, borderRadius:12, resize:"vertical", outline:"none", boxSizing:"border-box" }} />
-          <div style={{ display:"flex", gap:16, marginTop:10, color:"#475569", fontSize:12, flexWrap:"wrap" }}>
-            <span>⏱ {fmt(timer)}</span><span>📝 {wc(essay)} words</span>
-            <span style={{ color:wc(essay)>=20?"#22C55E":"#475569" }}>{wc(essay)>=20?"✓ Ready":`${20-wc(essay)} more words`}</span>
-          </div>
-          <Btn onClick={getFeedback} disabled={wc(essay)<20||loading} color={lc.accent} full style={{ marginTop:12 }}>{loading?"AI is reviewing…":"Get AI Feedback →"}</Btn>
+          {submitted ? (
+            <div style={{ ...S.card, textAlign:"center", padding:"30px 20px" }}>
+              <div style={{ fontSize:32, marginBottom:10 }}>✅</div>
+              <div style={{ fontWeight:700, fontSize:15, marginBottom:6 }}>Already Submitted!</div>
+              <div style={{ color:"#64748B", fontSize:13, marginBottom:16 }}>You have already submitted this prompt. View your feedback or try the next one.</div>
+              <div style={{ display:"flex", gap:10 }}>
+                <Btn onClick={() => setTab("feedback")} color="#6366F1" full>View Feedback →</Btn>
+                <Btn onClick={next} color="#475569" full>Next Prompt →</Btn>
+              </div>
+            </div>
+          ) : (
+            <>
+              <textarea value={essay} onChange={e => { setEssay(e.target.value); if (!timerOn && e.target.value.length > 0) setTimerOn(true); }}
+                placeholder="Write the English version here… timer starts when you type."
+                style={{ width:"100%", minHeight:180, padding:16, fontSize:15, lineHeight:1.8, fontFamily:"Georgia,serif", background:"#1E293B", color:"#E2E8F0", border:`1.5px solid ${essay.length>0?lc.accent+"66":"#334155"}`, borderRadius:12, resize:"vertical", outline:"none", boxSizing:"border-box" }} />
+              <div style={{ display:"flex", gap:16, marginTop:10, color:"#475569", fontSize:12, flexWrap:"wrap" }}>
+                <span>⏱ {fmt(timer)}</span><span>📝 {wc(essay)} words</span>
+                <span style={{ color:wc(essay)>=20?"#22C55E":"#475569" }}>{wc(essay)>=20?"✓ Ready":`${20-wc(essay)} more words`}</span>
+              </div>
+              <div style={{ color:"#F59E0B", fontSize:11, marginTop:8 }}>
+                ⚠️ You can only submit this prompt once — make it count!
+              </div>
+              <Btn onClick={getFeedback} disabled={wc(essay)<20||loading} color={lc.accent} full style={{ marginTop:10 }}>{loading?"AI is reviewing…":"Get AI Feedback →"}</Btn>
+            </>
+          )}
         </>
       )}
 

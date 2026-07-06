@@ -1,4 +1,4 @@
-export const GEMINI_KEY = process.env.REACT_APP_GEMINI_KEY;
+export const GROQ_KEY = process.env.REACT_APP_GROQ_KEY;
 
 export const FB = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -11,4 +11,3 @@ export const FB = {
 };
 
 export const DEV_SECRET = process.env.REACT_APP_DEV_SECRET;
-  

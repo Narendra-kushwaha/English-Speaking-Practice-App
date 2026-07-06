@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { LC, S } from "../../data/questions";
 import { fsGet } from "../../utils/store";
-import { askAI, parseJSON } from "../../utils/ai";
 import { recordAttempt, getQuestionState, getProgress } from "../../utils/progress";
 import { Btn, Badge, TopBar, ProgressBar } from "../shared/UI";
 
@@ -11,7 +10,6 @@ export default function HindiMode({ level, onBack, uid, adminId }) {
   const [idx, setIdx]             = useState(0);
   const [typed, setTyped]         = useState("");
   const [result, setResult]       = useState(null);
-  const [loading, setLoading]     = useState(false);
   const [locked, setLocked]       = useState(false);
   const [showHint, setShowHint]   = useState(false);
   const [score, setScore]         = useState(0);
@@ -45,67 +43,53 @@ export default function HindiMode({ level, onBack, uid, adminId }) {
     }
   }
 
-
   async function checkTranslation() {
-    if (!typed.trim() || loading || !q || locked) return;
-    setLoading(true);
-    try {
-      const raw = await askAI(`You are an English teacher evaluating a Hindi to English translation.
-Hindi sentence: "${q.hindi}"
-Model answer: "${q.answer}"
-Student answer: "${typed.trim()}"
-Level: ${level}
-Ignore capital or small letter differences. Accept if meaning matches and grammar is reasonable.
-Respond ONLY with JSON: { "correct": true or false, "feedback": "1-2 sentences in English only", "model_answer": "${q.answer}" }`, 400);
-      const fb = parseJSON(raw);
-      if (fb) {
-        const correct = !!fb.correct;
-        const r = await recordAttempt(uid, "hindi", level, q.id, correct, 2);
-        setLocked(r.locked);
-        setShowHint(r.showHint);
-        if (correct) setScore(s => s + 1);
-        setResult({ ...fb, hint: q.hint, attemptsRemaining: r.locked ? 0 : 1 });
-      }
-    } catch {
-      setResult({ correct:false, feedback:"Could not evaluate. Try again.", model_answer:q.answer });
-    }
-    setLoading(false);
+    if (!typed.trim() || !q || locked) return;
+
+    // const correct = typed.trim().toLowerCase() === q.answer?.trim().toLowerCase();
+    const normalize = str => str.trim().toLowerCase().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ");
+    const correct = normalize(typed) === normalize(q.answer);
+    const r = await recordAttempt(uid, "hindi", level, q.id, correct, 2);
+
+    setLocked(r.locked);
+    setShowHint(r.showHint);
+    if (correct) setScore(s => s + 1);
+
+    setResult({
+      correct,
+      feedback: correct
+        ? "Great job! Your translation is correct."
+        : r.locked
+        ? "Both attempts used. Check the model answer below."
+        : "Not quite right. Try once more!",
+      model_answer: q.answer,
+      hint: q.hint,
+    });
   }
 
   function tryAgain() { setTyped(""); setResult(null); }
 
   async function next() {
-  if (questions.length === 0) return;
+    if (questions.length === 0) return;
+    const newIdx = (idx + 1) % questions.length;
+    setIdx(newIdx);
+    const p = await getProgress(uid);
+    loadQuestionState(p, questions[newIdx]);
+  }
 
-  const newIdx = (idx + 1) % questions.length;
-  setIdx(newIdx);
-
-  const p = await getProgress(uid);
-  loadQuestionState(p, questions[newIdx]);
-}
-
-  // if (!q) return <div style={{ ...S.pg, display:"flex", alignItems:"center", justifyContent:"center" }}><div style={{ color:"#64748B" }}>Loading…</div></div>;
-if (questions.length === 0) {
-  return (
-    <div
-      style={{
-        ...S.pg,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div style={{ color: "#64748B", textAlign: "center" }}>
-        <h3>No Hindi questions available</h3>
-        <p>Please ask the admin to add Hindi questions for {level} level.</p>
+  if (questions.length === 0) {
+    return (
+      <div style={{ ...S.pg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ color:"#64748B", textAlign:"center" }}>
+          <h3>No Hindi questions available</h3>
+          <p>Please ask the admin to add Hindi questions for {level} level.</p>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-const q = questions[idx];
-const isCorrect = result?.correct;
- 
+  const q = questions[idx];
+  const isCorrect = result?.correct;
 
   return (
     <div style={S.pg}><div style={S.wrap}>
@@ -119,9 +103,9 @@ const isCorrect = result?.correct;
 
       {!result && !locked && (
         <>
-          <textarea value={typed} onChange={e => setTyped(e.target.value)} placeholder="Type the English translation here…" disabled={loading}
+          <textarea value={typed} onChange={e => setTyped(e.target.value)} placeholder="Type the English translation here…"
             style={{ ...S.inp, minHeight:100, resize:"vertical", lineHeight:1.8, fontSize:15, fontFamily:"Georgia,serif", padding:14 }} />
-          <Btn onClick={checkTranslation} disabled={!typed.trim()||loading} color={lc.accent} full>{loading?"Checking…":"Check My Answer ✓"}</Btn>
+          <Btn onClick={checkTranslation} disabled={!typed.trim()} color={lc.accent} full>Check My Answer ✓</Btn>
         </>
       )}
 
@@ -150,7 +134,7 @@ const isCorrect = result?.correct;
             </div>
           )}
           {!locked && <Btn onClick={tryAgain} color="#EF4444" full>🔄 Try Again (1 attempt left)</Btn>}
-          {locked && <Btn onClick={next} color={lc.accent} full>Next Sentence →</Btn>}
+          {locked  && <Btn onClick={next}     color={lc.accent} full>Next Sentence →</Btn>}
         </>
       )}
     </div></div>
