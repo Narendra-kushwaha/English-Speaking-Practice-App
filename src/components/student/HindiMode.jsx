@@ -75,11 +75,14 @@ Respond ONLY with JSON: { "correct": true or false, "feedback": "1-2 sentences i
   function tryAgain() { setTyped(""); setResult(null); }
 
   async function next() {
-    const newIdx = (idx + 1) % questions.length;
-    setIdx(newIdx);
-    const p = await getProgress(uid);
-    loadQuestionState(p, questions[newIdx]);
-  }
+  if (questions.length === 0) return;
+
+  const newIdx = (idx + 1) % questions.length;
+  setIdx(newIdx);
+
+  const p = await getProgress(uid);
+  loadQuestionState(p, questions[newIdx]);
+}
 
   // if (!q) return <div style={{ ...S.pg, display:"flex", alignItems:"center", justifyContent:"center" }}><div style={{ color:"#64748B" }}>Loading…</div></div>;
 if (questions.length === 0) {
@@ -99,6 +102,9 @@ if (questions.length === 0) {
     </div>
   );
 }
+
+const q = questions[idx];
+const isCorrect = result?.correct;
  
 
   return (
