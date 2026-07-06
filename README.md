@@ -1037,19 +1037,19 @@ It motivates me to build more useful open-source projects.
 
 ### 👨‍💻 Developer
 
-**Raja Kushwaha**
+**Narendra Kushwaha**
 
 📧 Email
 
-YOUR_EMAIL_HERE
+narendra626315@gmail.com
 
 💼 LinkedIn
 
-YOUR_LINKEDIN_URL
+https://linkedin.com/in/narendra-kushwaha-38232a237
 
 🌐 Portfolio
 
-YOUR_PORTFOLIO_URL
+https://narendra-kushwaha-portfolio.vercel.app/
 
 🐙 GitHub
 
