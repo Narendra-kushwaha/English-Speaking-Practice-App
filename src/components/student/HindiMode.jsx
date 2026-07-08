@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { LC, S } from "../../data/questions";
 import { fsGet } from "../../utils/store";
-import { recordAttempt, getQuestionState, getProgress } from "../../utils/progress";
+import { recordAttempt, getQuestionState, getProgress, isModeBlockedToday, blockModeForToday } from "../../utils/progress";
 import { Btn, Badge, TopBar, ProgressBar } from "../shared/UI";
 
 export default function HindiMode({ level, onBack, uid, adminId }) {
@@ -13,6 +13,7 @@ export default function HindiMode({ level, onBack, uid, adminId }) {
   const [locked, setLocked]       = useState(false);
   const [showHint, setShowHint]   = useState(false);
   const [score, setScore]         = useState(0);
+  const [modeBlocked, setModeBlocked] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -23,9 +24,25 @@ export default function HindiMode({ level, onBack, uid, adminId }) {
       setScore(0);
       setIdx(0);
       const p = await getProgress(uid);
+      if (isModeBlockedToday(p, "hindi")) {
+        setModeBlocked(true);
+        return;
+      }
       loadQuestionState(p, all[0]);
     })();
   }, [level, adminId]);
+
+  // Tab switch detection
+  useEffect(() => {
+    async function handleVisibilityChange() {
+      if (document.hidden && !modeBlocked) {
+        await blockModeForToday(uid, "hindi");
+        setModeBlocked(true);
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [uid, modeBlocked]);
 
   function loadQuestionState(p, q) {
     if (!q) return;
@@ -45,16 +62,12 @@ export default function HindiMode({ level, onBack, uid, adminId }) {
 
   async function checkTranslation() {
     if (!typed.trim() || !q || locked) return;
-
-    // const correct = typed.trim().toLowerCase() === q.answer?.trim().toLowerCase();
     const normalize = str => str.trim().toLowerCase().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ");
     const correct = normalize(typed) === normalize(q.answer);
     const r = await recordAttempt(uid, "hindi", level, q.id, correct, 2);
-
     setLocked(r.locked);
     setShowHint(r.showHint);
     if (correct) setScore(s => s + 1);
-
     setResult({
       correct,
       feedback: correct
@@ -75,6 +88,24 @@ export default function HindiMode({ level, onBack, uid, adminId }) {
     setIdx(newIdx);
     const p = await getProgress(uid);
     loadQuestionState(p, questions[newIdx]);
+  }
+
+  // Mode blocked screen
+  if (modeBlocked) {
+    return (
+      <div style={{ ...S.pg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ textAlign:"center", padding:24 }}>
+          <div style={{ fontSize:48, marginBottom:16 }}>🚫</div>
+          <div style={{ fontWeight:800, fontSize:18, color:"#EF4444", marginBottom:8 }}>Access Blocked!</div>
+          <div style={{ color:"#94A3B8", fontSize:14, lineHeight:1.7, marginBottom:20 }}>
+            You switched tabs during practice.<br/>
+            Hindi → English is blocked for today.<br/>
+            Come back tomorrow to continue.
+          </div>
+          <Btn onClick={onBack} color="#475569">← Go Back</Btn>
+        </div>
+      </div>
+    );
   }
 
   if (questions.length === 0) {

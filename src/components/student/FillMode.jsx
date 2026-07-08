@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { LC, S } from "../../data/questions";
 import { fsGet } from "../../utils/store";
-import { recordAttempt, getQuestionState, getProgress } from "../../utils/progress";
+import { recordAttempt, getQuestionState, getProgress, isModeBlockedToday, blockModeForToday } from "../../utils/progress";
 import { Btn, Badge, TopBar, ProgressBar } from "../shared/UI";
 
 export default function FillMode({ level, onBack, uid, adminId }) {
@@ -15,6 +15,7 @@ export default function FillMode({ level, onBack, uid, adminId }) {
   const [showHint, setShowHint]   = useState(false);
   const [attemptsUsed, setAttemptsUsed] = useState(0);
   const [score, setScore]         = useState(0);
+  const [modeBlocked, setModeBlocked] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -22,14 +23,29 @@ export default function FillMode({ level, onBack, uid, adminId }) {
       const extra = data?.list || [];
       const all   = [...extra].sort(() => Math.random() - 0.5);
       setQuestions(all);
-
-      // Load existing progress to restore lock state if student already attempted this question before
       const p = await getProgress(uid);
       setScore(0);
       setIdx(0);
+      // Check if mode is blocked today
+      if (isModeBlockedToday(p, "fill")) {
+        setModeBlocked(true);
+        return;
+      }
       loadQuestionState(p, all[0]);
     })();
   }, [level, adminId]);
+
+  // Tab switch detection
+  useEffect(() => {
+    async function handleVisibilityChange() {
+      if (document.hidden && !modeBlocked) {
+        await blockModeForToday(uid, "fill");
+        setModeBlocked(true);
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [uid, modeBlocked]);
 
   function loadQuestionState(p, q) {
     if (!q) return;
@@ -40,7 +56,7 @@ export default function FillMode({ level, onBack, uid, adminId }) {
       setIsCorrect(state.correct);
       setAttemptsUsed(state.attempts);
       setShowHint(state.attempts >= 2 && !state.correct);
-      setSelected(state.correct ? q.answer : null); // best-effort display
+      setSelected(state.correct ? q.answer : null);
     } else {
       setChecked(false);
       setLocked(false);
@@ -55,26 +71,18 @@ export default function FillMode({ level, onBack, uid, adminId }) {
     if (!selected || locked || !q) return;
     const correct = selected?.trim().toLowerCase() === q.answer?.trim().toLowerCase();
     const result = await recordAttempt(uid, "fill", level, q.id, correct, 1);
-
     setChecked(true);
     setIsCorrect(correct);
     setLocked(result.locked);
     setShowHint(result.showHint);
     setAttemptsUsed(result.attemptsUsed);
-
     if (correct) setScore(s => s + 1);
-
-    // If not locked yet (1st wrong attempt) — allow Try Again
-    if (!result.locked) {
-      // keep selection visible briefly is fine; student can retry
-    }
   }
 
   function tryAgain() {
     setSelected(null);
     setChecked(false);
     setIsCorrect(false);
-    // locked stays false, attemptsUsed stays as is
   }
 
   async function next() {
@@ -83,31 +91,45 @@ export default function FillMode({ level, onBack, uid, adminId }) {
     const p = await getProgress(uid);
     loadQuestionState(p, questions[newIdx]);
   }
+
   const q = questions[idx];
-  if (questions.length === 0) {
-  return (
-    <div style={{ ...S.pg, display:"flex", alignItems:"center", justifyContent:"center" }}>
-      <div style={{ color:"#64748B", textAlign:"center" }}>
-        <h3>No Fill in the Blank questions available</h3>
-        <p>Please ask the admin to add questions for {level} level.</p>
+
+  // Mode blocked screen
+  if (modeBlocked) {
+    return (
+      <div style={{ ...S.pg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ textAlign:"center", padding:24 }}>
+          <div style={{ fontSize:48, marginBottom:16 }}>🚫</div>
+          <div style={{ fontWeight:800, fontSize:18, color:"#EF4444", marginBottom:8 }}>Access Blocked!</div>
+          <div style={{ color:"#94A3B8", fontSize:14, lineHeight:1.7, marginBottom:20 }}>
+            You switched tabs during practice.<br/>
+            Fill in the Blanks is blocked for today.<br/>
+            Come back tomorrow to continue.
+          </div>
+          <Btn onClick={onBack} color="#475569">← Go Back</Btn>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-  // if (!q) return <div style={{ ...S.pg, display:"flex", alignItems:"center", justifyContent:"center" }}><div style={{ color:"#64748B" }}>Loading…</div></div>;
+  if (questions.length === 0) {
+    return (
+      <div style={{ ...S.pg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ color:"#64748B", textAlign:"center" }}>
+          <h3>No Fill in the Blank questions available</h3>
+          <p>Please ask the admin to add questions for {level} level.</p>
+        </div>
+      </div>
+    );
+  }
 
-  
-
-if (!q) {
-  return (
-    <div style={{ ...S.pg, display:"flex", alignItems:"center", justifyContent:"center" }}>
-      <div style={{ color:"#64748B" }}>No questions available.</div>
-    </div>
-  );
-}
-
-
+  if (!q) {
+    return (
+      <div style={{ ...S.pg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ color:"#64748B" }}>No questions available.</div>
+      </div>
+    );
+  }
 
   return (
     <div style={S.pg}><div style={S.wrap}>

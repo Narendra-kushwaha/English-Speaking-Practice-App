@@ -5,13 +5,14 @@ const today = () => new Date().toISOString().slice(0, 10);
 // ── DEFAULT PROGRESS SHAPE ──────────────────────────────────────────────────
 function emptyProgress() {
   return {
-    totalAttempted: 0,   // every attempt (1st + 2nd tries) counts
-    totalCorrect: 0,     // only final-locked correct results
-    totalWrong: 0,       // only final-locked wrong results
-    totalScore: 0,       // sum of points (fill +1, hindi +2, writing 0-5)
-    dailyStats: {},      // { "2026-07-01": { attempted, correct, wrong } }
-    levelStats: {},      // { Beginner: { attempted, correct, wrong } }
-    lockedQuestions: {}, // { "<mode>_<level>_<questionId>": { attempts, correct, locked } }
+    totalAttempted: 0,
+    totalCorrect: 0,
+    totalWrong: 0,
+    totalScore: 0,
+    dailyStats: {},
+    levelStats: {},
+    lockedQuestions: {},
+    tabSwitchBlocked: {}, // { "2026-07-01": { fill: true, hindi: true, writing: true } }
   };
 }
 
@@ -28,6 +29,22 @@ export function getTodayStats(progress) {
   };
 }
 
+// Check if a mode is blocked today due to tab switch
+export function isModeBlockedToday(progress, mode) {
+  return progress?.tabSwitchBlocked?.[today()]?.[mode] === true;
+}
+
+// Block a mode for today due to tab switch
+export async function blockModeForToday(uid, mode) {
+  const p = await getProgress(uid);
+  const t = today();
+  if (!p.tabSwitchBlocked) p.tabSwitchBlocked = {};
+  if (!p.tabSwitchBlocked[t]) p.tabSwitchBlocked[t] = {};
+  p.tabSwitchBlocked[t][mode] = true;
+  await fsSet("progress", uid, p);
+  return p;
+}
+
 // Check if a question is already locked
 export function getQuestionState(progress, mode, level, questionId) {
   const key = `${mode}_${level}_${questionId}`;
@@ -41,15 +58,7 @@ export function getQuestionState(progress, mode, level, questionId) {
 }
 
 // ── RECORD AN ATTEMPT ────────────────────────────────────────────────────────
-// mode: "fill" | "hindi"
-export async function recordAttempt(
-  uid,
-  mode,
-  level,
-  questionId,
-  isCorrect,
-  points = 0
-) {
+export async function recordAttempt(uid, mode, level, questionId, isCorrect, points = 0) {
   const p = await getProgress(uid);
 
   const key = `${mode}_${level}_${questionId}`;
@@ -59,14 +68,11 @@ export async function recordAttempt(
     locked: false,
   };
 
-  // Already locked
   if (existing.locked) {
     return {
       progress: p,
       locked: true,
-      showHint:
-        existing.attempts >= 2 &&
-        !existing.correct,
+      showHint: existing.attempts >= 2 && !existing.correct,
       attemptsUsed: existing.attempts,
     };
   }
@@ -77,15 +83,7 @@ export async function recordAttempt(
   p.totalAttempted += 1;
 
   const t = today();
-
-  if (!p.dailyStats[t]) {
-    p.dailyStats[t] = {
-      attempted: 0,
-      correct: 0,
-      wrong: 0,
-    };
-  }
-
+  if (!p.dailyStats[t]) p.dailyStats[t] = { attempted: 0, correct: 0, wrong: 0 };
   p.dailyStats[t].attempted += 1;
 
   if (willLock) {
@@ -98,21 +96,10 @@ export async function recordAttempt(
       p.dailyStats[t].wrong += 1;
     }
 
-    if (!p.levelStats[level]) {
-      p.levelStats[level] = {
-        attempted: 0,
-        correct: 0,
-        wrong: 0,
-      };
-    }
-
+    if (!p.levelStats[level]) p.levelStats[level] = { attempted: 0, correct: 0, wrong: 0 };
     p.levelStats[level].attempted += 1;
-
-    if (isCorrect) {
-      p.levelStats[level].correct += 1;
-    } else {
-      p.levelStats[level].wrong += 1;
-    }
+    if (isCorrect) p.levelStats[level].correct += 1;
+    else p.levelStats[level].wrong += 1;
   }
 
   p.lockedQuestions[key] = {
@@ -123,10 +110,7 @@ export async function recordAttempt(
 
   await fsSet("progress", uid, p);
 
-  const showHint =
-    willLock &&
-    !isCorrect &&
-    newAttemptCount >= 2;
+  const showHint = willLock && !isCorrect && newAttemptCount >= 2;
 
   return {
     progress: p,
@@ -136,35 +120,19 @@ export async function recordAttempt(
   };
 }
 
-// ── WRITING: AI gives 0-5 score directly, each prompt can be submitted only once ───────────
-export async function recordWritingSubmission(
-  uid,
-  level,
-  aiScore,
-  questionId
-) {
+// ── WRITING ──────────────────────────────────────────────────────────────────
+export async function recordWritingSubmission(uid, level, aiScore, questionId) {
   const p = await getProgress(uid);
 
   const t = today();
-
   const key = `writing_${level}_${questionId}`;
 
-  // Already submitted
-  if (p.lockedQuestions[key]?.locked) {
-    return p;
-  }
+  if (p.lockedQuestions[key]?.locked) return p;
 
   p.totalAttempted += 1;
   p.totalScore += aiScore;
 
-  if (!p.dailyStats[t]) {
-    p.dailyStats[t] = {
-      attempted: 0,
-      correct: 0,
-      wrong: 0,
-    };
-  }
-
+  if (!p.dailyStats[t]) p.dailyStats[t] = { attempted: 0, correct: 0, wrong: 0 };
   p.dailyStats[t].attempted += 1;
 
   if (aiScore >= 3) {
@@ -175,30 +143,13 @@ export async function recordWritingSubmission(
     p.dailyStats[t].wrong += 1;
   }
 
-  if (!p.levelStats[level]) {
-    p.levelStats[level] = {
-      attempted: 0,
-      correct: 0,
-      wrong: 0,
-    };
-  }
-
+  if (!p.levelStats[level]) p.levelStats[level] = { attempted: 0, correct: 0, wrong: 0 };
   p.levelStats[level].attempted += 1;
+  if (aiScore >= 3) p.levelStats[level].correct += 1;
+  else p.levelStats[level].wrong += 1;
 
-  if (aiScore >= 3) {
-    p.levelStats[level].correct += 1;
-  } else {
-    p.levelStats[level].wrong += 1;
-  }
-
-  // Lock this writing question
-  p.lockedQuestions[key] = {
-    attempts: 1,
-    correct: aiScore >= 3,
-    locked: true,
-  };
+  p.lockedQuestions[key] = { attempts: 1, correct: aiScore >= 3, locked: true };
 
   await fsSet("progress", uid, p);
-
   return p;
 }

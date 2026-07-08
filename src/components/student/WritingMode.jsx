@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { LC, S } from "../../data/questions";
 import { fsGet } from "../../utils/store";
 import { askAI, parseJSON } from "../../utils/ai";
-import { recordWritingSubmission, getProgress } from "../../utils/progress";
+import { recordWritingSubmission, getProgress, isModeBlockedToday, blockModeForToday } from "../../utils/progress";
 import { Btn, Badge, TopBar } from "../shared/UI";
 
 export default function WritingMode({ level, onBack, uid, adminId }) {
@@ -16,6 +16,7 @@ export default function WritingMode({ level, onBack, uid, adminId }) {
   const [timer, setTimer]         = useState(0);
   const [timerOn, setTimerOn]     = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [modeBlocked, setModeBlocked] = useState(false);
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -26,6 +27,10 @@ export default function WritingMode({ level, onBack, uid, adminId }) {
       setPrompts(all);
       setIdx(0);
       const prog = await getProgress(uid);
+      if (isModeBlockedToday(prog, "writing")) {
+        setModeBlocked(true);
+        return;
+      }
       checkSubmitted(prog, all[0]);
     })();
   }, [level, adminId]);
@@ -35,6 +40,19 @@ export default function WritingMode({ level, onBack, uid, adminId }) {
     else clearInterval(timerRef.current);
     return () => clearInterval(timerRef.current);
   }, [timerOn]);
+
+  // Tab switch detection
+  useEffect(() => {
+    async function handleVisibilityChange() {
+      if (document.hidden && !modeBlocked && !submitted) {
+        await blockModeForToday(uid, "writing");
+        setModeBlocked(true);
+        setTimerOn(false);
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [uid, modeBlocked, submitted]);
 
   function checkSubmitted(prog, prompt) {
     if (!prompt) return;
@@ -85,6 +103,24 @@ Respond ONLY with JSON: { "overall": "2-sentence feedback", "translation_accurac
       }
     } catch { setFeedback({ error:true }); setTab("feedback"); }
     setLoading(false);
+  }
+
+  // Mode blocked screen
+  if (modeBlocked) {
+    return (
+      <div style={{ ...S.pg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ textAlign:"center", padding:24 }}>
+          <div style={{ fontSize:48, marginBottom:16 }}>🚫</div>
+          <div style={{ fontWeight:800, fontSize:18, color:"#EF4444", marginBottom:8 }}>Access Blocked!</div>
+          <div style={{ color:"#94A3B8", fontSize:14, lineHeight:1.7, marginBottom:20 }}>
+            You switched tabs during practice.<br/>
+            Writing Practice is blocked for today.<br/>
+            Come back tomorrow to continue.
+          </div>
+          <Btn onClick={onBack} color="#475569">← Go Back</Btn>
+        </div>
+      </div>
+    );
   }
 
   if (prompts.length === 0) {
