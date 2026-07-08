@@ -25,6 +25,26 @@ export default function StudentHome({ profile }) {
     setProgress(p);
   }
 
+  // Blocked screen
+if (profile?.blocked) {
+  return (
+    <div style={{ ...S.pg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <div style={{ textAlign:"center", padding:24, maxWidth:360 }}>
+        <div style={{ fontSize:52, marginBottom:16 }}>🚫</div>
+        <div style={{ fontWeight:900, fontSize:20, color:"#EF4444", marginBottom:8 }}>You Are Blocked</div>
+        <div style={{ color:"#94A3B8", fontSize:14, marginBottom:24 }}>
+          Contact Admin: 📱 <strong style={{ color:"#F8FAFC" }}>{profile?.adminMobile || "N/A"}</strong>
+        </div>
+        {/* <div style={{ color:"#94A3B8", fontSize:14, lineHeight:1.7, marginBottom:24 }}>
+          Your account has been blocked by your Admin.<br/>
+          Please contact your admin for further assistance.
+        </div> */}
+        <Btn onClick={logoutUser} color="#EF4444" full>Logout</Btn>
+      </div>
+    </div>
+  );
+}
+
   if (screen === "fill")
     return (
       <FillMode
