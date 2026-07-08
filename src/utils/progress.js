@@ -83,7 +83,18 @@ export async function recordAttempt(uid, mode, level, questionId, isCorrect, poi
   p.totalAttempted += 1;
 
   const t = today();
-  if (!p.dailyStats[t]) p.dailyStats[t] = { attempted: 0, correct: 0, wrong: 0 };
+  if (!p.dailyStats[t]) {
+  p.dailyStats[t] = {
+    attempted: 0,
+    correct: 0,
+    wrong: 0,
+    points: 0
+  };
+} else if (p.dailyStats[t].points == null) {
+  p.dailyStats[t].points = 0;
+}
+
+  // if (!p.dailyStats[t]) p.dailyStats[t] = { attempted: 0, correct: 0, wrong: 0 };
   p.dailyStats[t].attempted += 1;
 
   if (willLock) {
@@ -91,6 +102,9 @@ export async function recordAttempt(uid, mode, level, questionId, isCorrect, poi
       p.totalCorrect += 1;
       p.dailyStats[t].correct += 1;
       p.totalScore += points;
+      p.dailyStats[t].points =
+      (p.dailyStats[t].points || 0) + points;
+      // p.dailyStats[t].points += points;
     } else {
       p.totalWrong += 1;
       p.dailyStats[t].wrong += 1;

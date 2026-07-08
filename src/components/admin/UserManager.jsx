@@ -85,12 +85,22 @@ export default function UserManager({ onBack, adminId }) {
   );
 
   function todayPoints(uid) {
-    const p = scores[uid];
-    if (!p) return 0;
+  const p = scores[uid];
 
-    const d = p.dailyStats?.[today()];
-    return d ? d.correct || 0 : 0;
-  }
+  if (!p) return 0;
+
+  const d = p.dailyStats?.[today()];
+
+  return d?.points || 0;
+}
+
+  // function todayPoints(uid) {
+  //   const p = scores[uid];
+  //   if (!p) return 0;
+
+  //   const d = p.dailyStats?.[today()];
+  //   return d ? d.correct || 0 : 0;
+  // }
 
   const top3 = [...students]
     .sort((a, b) => todayPoints(b.uid) - todayPoints(a.uid))
@@ -205,7 +215,7 @@ export default function UserManager({ onBack, adminId }) {
                     {todayPoints(s.uid)}
                   </div>
                   <div style={{ color: "#475569", fontSize: 10 }}>
-                    correct today
+                      points today
                   </div>
                 </div>
               </div>
