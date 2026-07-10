@@ -211,7 +211,7 @@ body {
 .certificate {
   position: relative;
   width: 289mm;
-  height: 180mm;
+  height: 202mm;
   overflow: hidden;
   background:
     radial-gradient(circle at center, rgba(255, 255, 255, .98), transparent 63%),
