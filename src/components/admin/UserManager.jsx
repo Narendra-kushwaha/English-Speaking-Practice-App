@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fsWhere, fsUpdate, fsGet } from "../../utils/store";
+import { fsWhere, fsUpdate, fsGet, fsSet } from "../../utils/store";
 import { S, LEVELS, LC } from "../../data/questions";
 import { Btn, TopBar, Msg } from "../shared/UI";
 
@@ -7,13 +7,14 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 export default function UserManager({ onBack, adminId }) {
   const [students, setStudents] = useState([]);
-  const [scores, setScores] = useState({}); // uid -> progress data
+  const [scores, setScores] = useState({});
+  const [certificates, setCertificates] = useState({});
   const [questionCount, setQuestionCount] = useState({});
 
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [msg, setMsg] = useState("");
-  const [view, setView] = useState("list"); // list | leaderboard
+  const [view, setView] = useState("list");
 
   useEffect(() => {
     loadStudents();
@@ -27,6 +28,7 @@ export default function UserManager({ onBack, adminId }) {
     setStudents(list);
 
     const progMap = {};
+    const certMap = {};
 
     await Promise.all(
       list.map(async (s) => {
@@ -35,13 +37,27 @@ export default function UserManager({ onBack, adminId }) {
         progMap[s.uid] = p || {
           totalAttempted: 0,
           totalCorrect: 0,
+          totalWrong: 0,
+          totalScore: 0,
           dailyStats: {},
           levelStats: {},
+        };
+
+        const cert = await fsGet("certificates", s.uid);
+
+        certMap[s.uid] = cert || {
+          adminId,
+          studentId: s.uid,
+          studentName: s.fullName,
+          studentEmail: s.email,
+          allowed: false,
+          endDate: "",
         };
       })
     );
 
     setScores(progMap);
+    setCertificates(certMap);
 
     const counts = {};
 
@@ -66,13 +82,72 @@ export default function UserManager({ onBack, adminId }) {
     await fsUpdate("users", stu.uid, { blocked: nb });
 
     setStudents((prev) =>
-      prev.map((s) =>
-        s.uid === stu.uid ? { ...s, blocked: nb } : s
-      )
+      prev.map((s) => (s.uid === stu.uid ? { ...s, blocked: nb } : s))
     );
 
+    setMsg(`${stu.fullName} has been ${nb ? "blocked" : "unblocked"}.`);
+    setTimeout(() => setMsg(""), 3000);
+  }
+
+  function updateCertificateEndDate(uid, endDate) {
+    setCertificates((prev) => ({
+      ...prev,
+      [uid]: {
+        ...(prev[uid] || {}),
+        endDate,
+      },
+    }));
+  }
+
+  async function toggleCertificate(stu) {
+    const current = certificates[stu.uid] || {};
+    const nextAllowed = !current.allowed;
+
+    if (nextAllowed && !current.endDate) {
+      setMsg("Please select certificate end date first.");
+      setTimeout(() => setMsg(""), 3000);
+      return;
+    }
+
+    const p = scores[stu.uid] || {};
+
+    const completed = (p.totalCorrect || 0) + (p.totalWrong || 0);
+    const accuracy =
+      completed > 0
+        ? Math.round(((p.totalCorrect || 0) / completed) * 100)
+        : 0;
+
+    const payload = {
+      adminId,
+      studentId: stu.uid,
+      studentName: stu.fullName || "",
+      studentEmail: stu.email || "",
+      allowed: nextAllowed,
+      allowDownload: nextAllowed,
+      endDate: current.endDate || "",
+      allowedAt: nextAllowed ? Date.now() : null,
+      disabledAt: nextAllowed ? null : Date.now(),
+      totalScore: p.totalScore || 0,
+      totalCorrect: p.totalCorrect || 0,
+      totalWrong: p.totalWrong || 0,
+      totalCompleted: completed,
+      accuracy,
+    };
+
+    await fsSet("certificates", stu.uid, payload);
+
+    setCertificates((prev) => ({
+      ...prev,
+      [stu.uid]: {
+        id: stu.uid,
+        ...payload,
+      },
+    }));
+
     setMsg(
-      `${stu.fullName} has been ${nb ? "blocked" : "unblocked"}.`
+      `${stu.fullName}'s certificate has been ${
+        nextAllowed ? "unlocked" : "locked"
+      }.`
     );
 
     setTimeout(() => setMsg(""), 3000);
@@ -85,22 +160,14 @@ export default function UserManager({ onBack, adminId }) {
   );
 
   function todayPoints(uid) {
-  const p = scores[uid];
+    const p = scores[uid];
 
-  if (!p) return 0;
+    if (!p) return 0;
 
-  const d = p.dailyStats?.[today()];
+    const d = p.dailyStats?.[today()];
 
-  return d?.points || 0;
-}
-
-  // function todayPoints(uid) {
-  //   const p = scores[uid];
-  //   if (!p) return 0;
-
-  //   const d = p.dailyStats?.[today()];
-  //   return d ? d.correct || 0 : 0;
-  // }
+    return d?.points || 0;
+  }
 
   const top3 = [...students]
     .sort((a, b) => todayPoints(b.uid) - todayPoints(a.uid))
@@ -135,7 +202,6 @@ export default function UserManager({ onBack, adminId }) {
 
         <Msg type="success" text={msg} />
 
-        {/* VIEW SWITCH */}
         <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
           {[
             ["list", "📋 All Students"],
@@ -148,9 +214,7 @@ export default function UserManager({ onBack, adminId }) {
                 flex: 1,
                 padding: "10px 8px",
                 borderRadius: 10,
-                border: `2px solid ${
-                  view === v ? "#6366F1" : "#334155"
-                }`,
+                border: `2px solid ${view === v ? "#6366F1" : "#334155"}`,
                 background: view === v ? "#6366F122" : "#1E293B",
                 color: view === v ? "#818CF8" : "#64748B",
                 cursor: "pointer",
@@ -163,7 +227,6 @@ export default function UserManager({ onBack, adminId }) {
           ))}
         </div>
 
-        {/* LEADERBOARD */}
         {view === "leaderboard" && (
           <>
             {top3.length === 0 && (
@@ -215,7 +278,7 @@ export default function UserManager({ onBack, adminId }) {
                     {todayPoints(s.uid)}
                   </div>
                   <div style={{ color: "#475569", fontSize: 10 }}>
-                      points today
+                    points today
                   </div>
                 </div>
               </div>
@@ -223,7 +286,6 @@ export default function UserManager({ onBack, adminId }) {
           </>
         )}
 
-        {/* LIST */}
         {view === "list" && (
           <>
             <input
@@ -262,12 +324,12 @@ export default function UserManager({ onBack, adminId }) {
 
             {filtered.map((s) => {
               const p = scores[s.uid] || {};
+              const cert = certificates[s.uid] || {};
 
-              const completed =
-                (p.totalCorrect || 0) + (p.totalWrong || 0);
-
+              const completed = (p.totalCorrect || 0) + (p.totalWrong || 0);
               const totalCorrect = p.totalCorrect || 0;
               const totalWrong = p.totalWrong || 0;
+              const totalScore = p.totalScore || 0;
 
               const accuracy =
                 completed > 0
@@ -311,21 +373,39 @@ export default function UserManager({ onBack, adminId }) {
                         {s.email} · 📱 {s.mobile}
                       </div>
 
-                      {s.blocked && (
-                        <span
-                          style={{
-                            background: "#450A0A",
-                            border: "1px solid #EF4444",
-                            borderRadius: 6,
-                            padding: "2px 8px",
-                            fontSize: 11,
-                            color: "#FCA5A5",
-                            fontWeight: 700,
-                          }}
-                        >
-                          BLOCKED
-                        </span>
-                      )}
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
+                        {s.blocked && (
+                          <span
+                            style={{
+                              background: "#450A0A",
+                              border: "1px solid #EF4444",
+                              borderRadius: 6,
+                              padding: "2px 8px",
+                              fontSize: 11,
+                              color: "#FCA5A5",
+                              fontWeight: 700,
+                            }}
+                          >
+                            BLOCKED
+                          </span>
+                        )}
+
+                        {cert.allowed && (
+                          <span
+                            style={{
+                              background: "#14532D",
+                              border: "1px solid #22C55E",
+                              borderRadius: 6,
+                              padding: "2px 8px",
+                              fontSize: 11,
+                              color: "#86EFAC",
+                              fontWeight: 700,
+                            }}
+                          >
+                            CERTIFICATE UNLOCKED
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <Btn
@@ -337,11 +417,10 @@ export default function UserManager({ onBack, adminId }) {
                     </Btn>
                   </div>
 
-                  {/* STATS */}
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "repeat(4,1fr)",
+                      gridTemplateColumns: "repeat(5,1fr)",
                       gap: 8,
                       paddingTop: 10,
                       borderTop: "1px solid #334155",
@@ -382,47 +461,102 @@ export default function UserManager({ onBack, adminId }) {
                         🎯 Accuracy
                       </div>
                     </div>
+
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ color: "#FCD34D", fontWeight: 800, fontSize: 16 }}>
+                        {totalScore}
+                      </div>
+                      <div style={{ color: "#475569", fontSize: 10 }}>
+                        ⭐ Score
+                      </div>
+                    </div>
                   </div>
 
-                  {/* LEVEL STATS */}
-                  {p.levelStats &&
-                    Object.keys(p.levelStats).length > 0 && (
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: 10,
-                          marginTop: 10,
-                          paddingTop: 10,
-                          borderTop: "1px solid #334155",
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        {LEVELS.map((lv) => {
-                          const ls = p.levelStats?.[lv] || {
-                            attempted: 0,
-                            correct: 0,
-                          };
+                  <div
+                    style={{
+                      marginTop: 12,
+                      paddingTop: 12,
+                      borderTop: "1px solid #334155",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr auto",
+                        gap: 10,
+                        alignItems: "center",
+                      }}
+                    >
+                      <div>
+                        <div style={{ color: "#94A3B8", fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
+                          🎓 Certificate End Date
+                        </div>
 
-                          const totalQuestions =
-                            questionCount[lv] || 0;
-
-                          return (
-                            <span
-                              key={lv}
-                              style={{
-                                fontSize: 11,
-                                color: LC[lv].accent,
-                                background: `${LC[lv].accent}15`,
-                                padding: "4px 10px",
-                                borderRadius: 6,
-                              }}
-                            >
-                              {LC[lv].emoji} {lv} {ls.correct}/{totalQuestions}
-                            </span>
-                          );
-                        })}
+                        <input
+                          type="date"
+                          value={cert.endDate || ""}
+                          onChange={(e) => updateCertificateEndDate(s.uid, e.target.value)}
+                          style={{
+                            ...S.inp,
+                            colorScheme: "dark",
+                            padding: "9px 12px",
+                            fontSize: 13,
+                          }}
+                        />
                       </div>
-                    )}
+
+                      <Btn
+                        onClick={() => toggleCertificate(s)}
+                        color={cert.allowed ? "#EF4444" : "#22C55E"}
+                        sm
+                      >
+                        {cert.allowed ? "Disable Certificate" : "Allow Certificate"}
+                      </Btn>
+                    </div>
+
+                    <div style={{ color: "#64748B", fontSize: 11, marginTop: 8 }}>
+                      {cert.allowed
+                        ? "Student can download certificate from dashboard."
+                        : "Set end date and allow download when course is completed."}
+                    </div>
+                  </div>
+
+                  {p.levelStats && Object.keys(p.levelStats).length > 0 && (
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 10,
+                        marginTop: 10,
+                        paddingTop: 10,
+                        borderTop: "1px solid #334155",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      {LEVELS.map((lv) => {
+                        const ls = p.levelStats?.[lv] || {
+                          attempted: 0,
+                          correct: 0,
+                        };
+
+                        const totalQuestions = questionCount[lv] || 0;
+
+                        return (
+                          <span
+                            key={lv}
+                            style={{
+                              fontSize: 11,
+                              color: LC[lv].accent,
+                              background: `${LC[lv].accent}15`,
+                              padding: "4px 10px",
+                              borderRadius: 6,
+                            }}
+                          >
+                            {LC[lv].emoji} {lv} {ls.correct}/{totalQuestions}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               );
             })}

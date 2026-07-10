@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { logoutUser } from "../../utils/auth";
 import { getProgress, getTodayStats } from "../../utils/progress";
+import { fsGet } from "../../utils/store";
+import { generateCertificatePdf } from "../../utils/certificatePdf";
 import FillMode from "./FillMode";
 import HindiMode from "./HindiMode";
 import WritingMode from "./WritingMode";
@@ -13,39 +15,98 @@ export default function StudentHome({ profile }) {
   const [screen, setScreen] = useState("home");
   const [level, setLevel] = useState("Beginner");
   const [progress, setProgress] = useState(null);
+  const [announcement, setAnnouncement] = useState(null);
+  const [showReminder, setShowReminder] = useState(false);
+  const [certificate, setCertificate] = useState(null);
+  const [certSettings, setCertSettings] = useState(null);
+  const [downloading, setDownloading] = useState(false);
 
   const lc = LC[level];
 
   useEffect(() => {
-    if (screen === "home") loadProgress();
+    if (screen === "home") {
+      loadHomeData();
+    }
   }, [screen]);
 
-  async function loadProgress() {
+  async function loadHomeData() {
     const p = await getProgress(profile.uid);
     setProgress(p);
+
+    const ann = await fsGet("announcements", profile.adminId);
+    setAnnouncement(ann || null);
+
+    const cert = await fsGet("certificates", profile.uid);
+    setCertificate(cert || null);
+
+    const settings = await fsGet("certificateSettings", profile.adminId);
+    setCertSettings(settings || null);
+
+    const t = new Date().toISOString().slice(0, 10);
+    const practicedToday = (p?.dailyStats?.[t]?.attempted || 0) > 0;
+    setShowReminder(!practicedToday);
   }
 
-  // Blocked screen
-if (profile?.blocked) {
-  return (
-    <div style={{ ...S.pg, display:"flex", alignItems:"center", justifyContent:"center" }}>
-      <div style={{ textAlign:"center", padding:24, maxWidth:360 }}>
-        <div style={{ fontSize:52, marginBottom:16 }}>🚫</div>
-        <div style={{ fontWeight:900, fontSize:20, color:"#EF4444", marginBottom:8 }}>You Are Blocked</div>
-        <div style={{ color:"#94A3B8", fontSize:14, marginBottom:24 }}>
-          Contact Admin: 📱 <strong style={{ color:"#F8FAFC" }}>{profile?.adminMobile || "N/A"}</strong>
-        </div>
-        {/* <div style={{ color:"#94A3B8", fontSize:14, lineHeight:1.7, marginBottom:24 }}>
-          Your account has been blocked by your Admin.<br/>
-          Please contact your admin for further assistance.
-        </div> */}
-        <Btn onClick={logoutUser} color="#EF4444" full>Logout</Btn>
-      </div>
-    </div>
-  );
-}
+  function formatDate(value) {
+    if (!value) return "";
+    try {
+      if (value?.toDate) return value.toDate().toLocaleString();
+      return new Date(value).toLocaleString();
+    } catch {
+      return "";
+    }
+  }
 
-  if (screen === "fill")
+  async function handleCertificateDownload() {
+    if (!(certificate?.allowed || certificate?.allowDownload)) return;
+
+    try {
+      setDownloading(true);
+
+      await generateCertificatePdf({
+        student: profile,
+        certificate,
+        settings: certSettings || {},
+        progress: progress || {},
+        adminProfile: {
+          adminId: profile.adminId,
+          fullName: certSettings?.adminName || certificate?.adminName || "Admin",
+          instituteName:
+            certSettings?.instituteName ||
+            certificate?.instituteName ||
+            profile?.instituteName ||
+            "",
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Certificate download failed. Please check console.");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  if (profile?.blocked) {
+    return (
+      <div style={{ ...S.pg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center", padding: 24, maxWidth: 360 }}>
+          <div style={{ fontSize: 52, marginBottom: 16 }}>🚫</div>
+          <div style={{ fontWeight: 900, fontSize: 20, color: "#EF4444", marginBottom: 8 }}>
+            You Are Blocked
+          </div>
+          <div style={{ color: "#94A3B8", fontSize: 14, marginBottom: 24 }}>
+            Contact Admin: 📱{" "}
+            <strong style={{ color: "#F8FAFC" }}>{profile?.adminMobile || "N/A"}</strong>
+          </div>
+          <Btn onClick={logoutUser} color="#EF4444" full>
+            Logout
+          </Btn>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === "fill") {
     return (
       <FillMode
         level={level}
@@ -54,8 +115,9 @@ if (profile?.blocked) {
         adminId={profile.adminId}
       />
     );
+  }
 
-  if (screen === "hindi")
+  if (screen === "hindi") {
     return (
       <HindiMode
         level={level}
@@ -64,8 +126,9 @@ if (profile?.blocked) {
         adminId={profile.adminId}
       />
     );
+  }
 
-  if (screen === "writing")
+  if (screen === "writing") {
     return (
       <WritingMode
         level={level}
@@ -74,27 +137,28 @@ if (profile?.blocked) {
         adminId={profile.adminId}
       />
     );
+  }
 
-  if (screen === "groups")
+  if (screen === "groups") {
     return <StudentGroups profile={profile} onBack={() => setScreen("home")} />;
+  }
 
-  if (screen === "settings")
+  if (screen === "settings") {
     return <AccountSettings profile={profile} onBack={() => setScreen("home")} />;
+  }
 
   const today = progress
     ? getTodayStats(progress)
-    : { attempted: 0, correct: 0, wrong: 0 };
+    : { attempted: 0, correct: 0, wrong: 0, points: 0 };
 
   const totalC = today.correct || 0;
   const totalW = today.wrong || 0;
-
   const completed = totalC + totalW;
   const totalQ = completed;
-
-  const accuracy =
-    completed > 0 ? ((totalC / completed) * 100).toFixed(1) : "0.0";
-
+  const accuracy = completed > 0 ? ((totalC / completed) * 100).toFixed(1) : "0.0";
   const totalScore = progress?.totalScore || 0;
+  const announcementText = announcement?.message || announcement?.text || "";
+  const certificateAllowed = certificate?.allowed || certificate?.allowDownload;
 
   return (
     <div style={S.pg}>
@@ -110,12 +174,8 @@ if (profile?.blocked) {
           }}
         >
           <div>
-            <div style={{ color: "#64748B", fontSize: 12 }}>
-              Welcome back 👋
-            </div>
-            <div style={{ fontWeight: 800, fontSize: 20 }}>
-              {profile?.fullName}
-            </div>
+            <div style={{ color: "#64748B", fontSize: 12 }}>Welcome back 👋</div>
+            <div style={{ fontWeight: 800, fontSize: 20 }}>{profile?.fullName}</div>
           </div>
 
           <div style={{ display: "flex", gap: 8 }}>
@@ -141,14 +201,126 @@ if (profile?.blocked) {
           </div>
         </div>
 
-        {/* ── MY PROGRESS ─────────────────────────────────────────────── */}
-        {progress && (
-          <>
-            {/* Total Score */}
+        {announcementText && (
+          <div
+            style={{
+              background: "linear-gradient(135deg,#1E3A8A,#1E40AF)",
+              border: "1px solid #3B82F6",
+              borderRadius: 14,
+              padding: 16,
+              marginBottom: 16,
+            }}
+          >
             <div
               style={{
-                background:
-                  "linear-gradient(135deg,#F59E0B22,#FCD34D11)",
+                color: "#93C5FD",
+                fontSize: 12,
+                fontWeight: 800,
+                marginBottom: 6,
+              }}
+            >
+              📢 ADMIN ANNOUNCEMENT
+            </div>
+
+            <div
+              style={{
+                color: "#F8FAFC",
+                fontSize: 15,
+                lineHeight: 1.6,
+                fontWeight: 600,
+              }}
+            >
+              {announcementText}
+            </div>
+
+            {(announcement.createdAt || announcement._at) && (
+              <div style={{ marginTop: 8, color: "#BFDBFE", fontSize: 11 }}>
+                {formatDate(announcement.createdAt || announcement._at)}
+              </div>
+            )}
+          </div>
+        )}
+
+        {showReminder && (
+          <div
+            style={{
+              background: "#451A03",
+              border: "1px solid #F59E0B",
+              borderRadius: 14,
+              padding: 16,
+              marginBottom: 16,
+            }}
+          >
+            <div
+              style={{
+                color: "#FCD34D",
+                fontWeight: 800,
+                fontSize: 15,
+                marginBottom: 5,
+              }}
+            >
+              🔔 Daily Reminder
+            </div>
+
+            <div
+              style={{
+                color: "#FDE68A",
+                fontSize: 13,
+                lineHeight: 1.6,
+              }}
+            >
+              You haven't practiced today. Complete today's practice to improve your English.
+            </div>
+          </div>
+        )}
+
+        <div
+          style={{
+            ...S.card,
+            borderColor: certificateAllowed ? "#22C55E55" : "#334155",
+            background: certificateAllowed ? "#14532D22" : "#1E293B",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 15 }}>🎓 Certificate</div>
+              <div
+                style={{
+                  color: certificateAllowed ? "#86EFAC" : "#64748B",
+                  fontSize: 12,
+                  marginTop: 4,
+                }}
+              >
+                {certificateAllowed
+                  ? "Your certificate is unlocked. You can download it now."
+                  : "Certificate download is locked until admin allows it."}
+              </div>
+            </div>
+
+            <Btn
+              onClick={handleCertificateDownload}
+              disabled={!certificateAllowed || downloading}
+              color={certificateAllowed ? "#22C55E" : "#475569"}
+              sm
+            >
+              {downloading ? "Generating..." : "Download Certificate"}
+            </Btn>
+          </div>
+        </div>
+
+        {progress && (
+          <>
+            <div
+              style={{
+                background: "linear-gradient(135deg,#F59E0B22,#FCD34D11)",
                 border: "1.5px solid #F59E0B44",
                 borderRadius: 14,
                 padding: "18px 20px",
@@ -170,13 +342,10 @@ if (profile?.blocked) {
 
               <div style={{ fontSize: 36, fontWeight: 900, color: "#FCD34D" }}>
                 {totalScore}{" "}
-                <span style={{ fontSize: 16, color: "#94A3B8" }}>
-                  Points
-                </span>
+                <span style={{ fontSize: 16, color: "#94A3B8" }}>Points</span>
               </div>
             </div>
 
-            {/* Today Stats */}
             <div style={S.card}>
               <div style={{ ...S.lbl, marginBottom: 12 }}>📅 Today</div>
 
@@ -202,8 +371,7 @@ if (profile?.blocked) {
                 }}
               >
                 <span style={{ color: "#94A3B8", fontSize: 13 }}>
-                  Accuracy:{" "}
-                  <strong style={{ color: "#F8FAFC" }}>{accuracy}%</strong>
+                  Accuracy: <strong style={{ color: "#F8FAFC" }}>{accuracy}%</strong>
                 </span>
 
                 <span style={{ color: "#94A3B8", fontSize: 13 }}>
@@ -215,11 +383,8 @@ if (profile?.blocked) {
               </div>
             </div>
 
-            {/* Level Progress */}
             <div style={S.card}>
-              <div style={{ ...S.lbl, marginBottom: 12 }}>
-                📈 Level Progress
-              </div>
+              <div style={{ ...S.lbl, marginBottom: 12 }}>📈 Level Progress</div>
 
               <div
                 style={{
@@ -286,7 +451,6 @@ if (profile?.blocked) {
           </>
         )}
 
-        {/* Level selector */}
         <div
           style={{
             display: "flex",
@@ -304,11 +468,8 @@ if (profile?.blocked) {
                 flex: "1 1 80px",
                 padding: "10px 8px",
                 borderRadius: 10,
-                border: `2px solid ${
-                  level === lv ? LC[lv].accent : "#334155"
-                }`,
-                background:
-                  level === lv ? `${LC[lv].accent}22` : "#1E293B",
+                border: `2px solid ${level === lv ? LC[lv].accent : "#334155"}`,
+                background: level === lv ? `${LC[lv].accent}22` : "#1E293B",
                 color: level === lv ? LC[lv].accent : "#64748B",
                 cursor: "pointer",
                 fontWeight: 800,
@@ -320,7 +481,6 @@ if (profile?.blocked) {
           ))}
         </div>
 
-        {/* Mode cards */}
         <div
           style={{
             display: "grid",
@@ -372,7 +532,6 @@ if (profile?.blocked) {
           ))}
         </div>
 
-        {/* Groups */}
         <button
           onClick={() => setScreen("groups")}
           style={{
@@ -382,6 +541,8 @@ if (profile?.blocked) {
             border: "1.5px solid #6366F133",
             background: "#1E293B",
             cursor: "pointer",
+            color: "#F8FAFC",
+            fontWeight: 800,
           }}
         >
           💬 Group Discussion
