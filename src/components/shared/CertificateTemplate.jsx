@@ -243,7 +243,7 @@ export default function CertificateTemplate({ data = {}, width = "100%", height 
     return () => { resizeObserver.disconnect(); window.removeEventListener("resize", updatePreviewSize); };
   }, []);
 
-  const mobileScale = isMobile && containerWidth > 0 ? Math.min(1, containerWidth / A4_WIDTH_PX) : 1;
+  const mobileScale = isMobile && containerWidth > 0 ? containerWidth / A4_WIDTH_PX : 1;
   const responsiveHeight = isMobile && containerWidth > 0 ? Math.ceil(A4_HEIGHT_PX * mobileScale) : height;
   const documentHtml = useMemo(() => buildCertificateDocument(data, { mobilePreview: isMobile, previewScale: mobileScale }), [data, isMobile, mobileScale]);
 
