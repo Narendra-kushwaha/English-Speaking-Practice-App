@@ -1,17 +1,30 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import QRCode from "qrcode";
 import { fsGet, fsSet } from "../../utils/store";
 import { S } from "../../data/questions";
 import { Btn, TopBar, Msg, Card, Field } from "../shared/UI";
+import CertificateTemplate from "../shared/CertificateTemplate";
+import { getCertificatePreviewData } from "../../utils/certificatePdf";
 
-export default function CertificateSettings({ onBack, adminProfile }) {
+export default function CertificateSettings({
+  onBack,
+  adminProfile,
+}) {
   const [instituteName, setInstituteName] = useState("");
-  const [courseName, setCourseName] = useState("English Practice Course");
+  const [academyTitle, setAcademyTitle] = useState(
+    "English Learning Academy"
+  );
+  const [courseName, setCourseName] = useState(
+    "English Practice Course"
+  );
   const [adminName, setAdminName] = useState("");
   const [defaultEndDate, setDefaultEndDate] = useState("");
+  const [defaultLevel, setDefaultLevel] = useState("Advanced");
 
   const [logo, setLogo] = useState("");
   const [signature, setSignature] = useState("");
   const [seal, setSeal] = useState("");
+  const [previewQr, setPreviewQr] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -24,24 +37,71 @@ export default function CertificateSettings({ onBack, adminProfile }) {
     loadSettings();
   }, []);
 
+  useEffect(() => {
+    generatePreviewQr();
+  }, [adminId]);
+
   async function loadSettings() {
     setLoading(true);
 
-    const data = await fsGet("certificateSettings", docId);
+    const data = await fsGet(
+      "certificateSettings",
+      docId
+    );
 
     if (data) {
-      setInstituteName(data.instituteName || "");
-      setCourseName(data.courseName || "English Practice Course");
-      setAdminName(data.adminName || adminProfile?.fullName || "");
-      setDefaultEndDate(data.defaultEndDate || "");
+      setInstituteName(
+        data.instituteName || ""
+      );
+
+      setAcademyTitle(
+        data.academyTitle ||
+          "English Learning Academy"
+      );
+
+      setCourseName(
+        data.courseName ||
+          "English Practice Course"
+      );
+
+      setAdminName(
+        data.adminName ||
+          adminProfile?.fullName ||
+          ""
+      );
+
+      setDefaultEndDate(
+        data.defaultEndDate || ""
+      );
+
+      setDefaultLevel(
+        data.defaultLevel || "Advanced"
+      );
+
       setLogo(data.logo || "");
       setSignature(data.signature || "");
       setSeal(data.seal || "");
     } else {
-      setInstituteName(adminProfile?.instituteName || adminProfile?.fullName || "");
-      setCourseName("English Practice Course");
-      setAdminName(adminProfile?.fullName || "");
+      setInstituteName(
+        adminProfile?.instituteName ||
+          adminProfile?.fullName ||
+          ""
+      );
+
+      setAcademyTitle(
+        "English Learning Academy"
+      );
+
+      setCourseName(
+        "English Practice Course"
+      );
+
+      setAdminName(
+        adminProfile?.fullName || ""
+      );
+
       setDefaultEndDate("");
+      setDefaultLevel("Advanced");
       setLogo("");
       setSignature("");
       setSeal("");
@@ -50,34 +110,99 @@ export default function CertificateSettings({ onBack, adminProfile }) {
     setLoading(false);
   }
 
+  async function generatePreviewQr() {
+    try {
+      const previewId =
+        `PREVIEW-${adminId || "ADMIN"}`;
+
+      const verificationUrl =
+        `${window.location.origin}/verify?certId=` +
+        encodeURIComponent(previewId);
+
+      const qr = await QRCode.toDataURL(
+        verificationUrl,
+        {
+          width: 220,
+          margin: 1,
+          color: {
+            dark: "#102b52",
+            light: "#fffdf5",
+          },
+        }
+      );
+
+      setPreviewQr(qr);
+    } catch (error) {
+      console.error(
+        "Preview QR generation failed:",
+        error
+      );
+
+      setPreviewQr("");
+    }
+  }
+
   function readImage(file, setter) {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setMsg("Please upload an image file only.");
-      setTimeout(() => setMsg(""), 2500);
+      showMessage(
+        "Please upload an image file only."
+      );
+      return;
+    }
+
+    const maxSize = 900 * 1024;
+
+    if (file.size > maxSize) {
+      showMessage(
+        "Image size should be less than 900 KB."
+      );
       return;
     }
 
     const reader = new FileReader();
 
     reader.onload = () => {
-      setter(reader.result);
+      setter(reader.result || "");
+    };
+
+    reader.onerror = () => {
+      showMessage(
+        "Image could not be loaded."
+      );
     };
 
     reader.readAsDataURL(file);
   }
 
+  function showMessage(text) {
+    setMsg(text);
+
+    setTimeout(() => {
+      setMsg("");
+    }, 3000);
+  }
+
   async function saveSettings() {
     if (!instituteName.trim()) {
-      setMsg("Please enter institute/admin name.");
-      setTimeout(() => setMsg(""), 2500);
+      showMessage(
+        "Please enter institute/admin name."
+      );
+      return;
+    }
+
+    if (!academyTitle.trim()) {
+      showMessage(
+        "Please enter academy title."
+      );
       return;
     }
 
     if (!courseName.trim()) {
-      setMsg("Please enter course name.");
-      setTimeout(() => setMsg(""), 2500);
+      showMessage(
+        "Please enter course name."
+      );
       return;
     }
 
@@ -85,44 +210,189 @@ export default function CertificateSettings({ onBack, adminProfile }) {
 
     const payload = {
       adminId,
-      instituteName: instituteName.trim(),
-      courseName: courseName.trim(),
-      adminName: adminName.trim() || adminProfile?.fullName || "Admin",
+
+      instituteName:
+        instituteName.trim(),
+
+      academyTitle:
+        academyTitle.trim(),
+
+      courseName:
+        courseName.trim(),
+
+      adminName:
+        adminName.trim() ||
+        adminProfile?.fullName ||
+        "Admin",
+
       defaultEndDate,
+
+      defaultLevel:
+        defaultLevel || "Advanced",
+
       logo,
       signature,
       seal,
+
       updatedAt: Date.now(),
     };
 
-    const ok = await fsSet("certificateSettings", docId, payload);
+    const ok = await fsSet(
+      "certificateSettings",
+      docId,
+      payload
+    );
 
     setSaving(false);
 
     if (ok) {
-      setMsg("Certificate settings saved successfully.");
+      showMessage(
+        "Certificate settings saved successfully."
+      );
     } else {
-      setMsg("Something went wrong. Please try again.");
+      showMessage(
+        "Something went wrong. Please try again."
+      );
     }
-
-    setTimeout(() => setMsg(""), 2500);
   }
 
-  function ImageUploader({ label, value, onChange, onRemove, hint }) {
+  const previewData = useMemo(() => {
+    return getCertificatePreviewData({
+      student: {
+        uid: "preview-student",
+        fullName: "Student Name",
+        joiningDate: "2026-01-01",
+      },
+
+      certificate: {
+        studentId: "preview-student",
+        studentName: "Student Name",
+        totalScore: 245,
+        totalCorrect: 38,
+        totalWrong: 7,
+        totalCompleted: 45,
+        accuracy: "84.4",
+        level: defaultLevel,
+        startDate: "2026-01-01",
+
+        endDate:
+          defaultEndDate ||
+          "2026-07-09",
+
+        certificateId:
+          "CERT-2026-PREVIEW",
+
+        issueDate: new Date(),
+      },
+
+      settings: {
+        instituteName:
+          instituteName ||
+          "English Learning Academy",
+
+        academyTitle:
+          academyTitle ||
+          "English Learning Academy",
+
+        courseName:
+          courseName ||
+          "English Practice Course",
+
+        adminName:
+          adminName ||
+          adminProfile?.fullName ||
+          "Course Instructor",
+
+        defaultEndDate:
+          defaultEndDate ||
+          "2026-07-09",
+
+        defaultLevel:
+          defaultLevel ||
+          "Advanced",
+
+        logo,
+        signature,
+        seal,
+      },
+
+      progress: {
+        totalScore: 245,
+        totalCorrect: 38,
+        totalWrong: 7,
+        currentLevel:
+          defaultLevel ||
+          "Advanced",
+      },
+
+      adminProfile: {
+        ...adminProfile,
+
+        instituteName:
+          instituteName ||
+          adminProfile?.instituteName ||
+          adminProfile?.fullName ||
+          "English Learning Academy",
+
+        fullName:
+          adminName ||
+          adminProfile?.fullName ||
+          "Course Instructor",
+      },
+
+      qrCode: previewQr,
+    });
+  }, [
+    instituteName,
+    academyTitle,
+    courseName,
+    adminName,
+    defaultEndDate,
+    defaultLevel,
+    logo,
+    signature,
+    seal,
+    previewQr,
+    adminProfile,
+  ]);
+
+  function ImageUploader({
+    label,
+    value,
+    onChange,
+    onRemove,
+    hint,
+  }) {
     return (
       <div style={{ marginBottom: 14 }}>
-        <div style={{ ...S.lbl, marginBottom: 8 }}>{label}</div>
+        <div
+          style={{
+            ...S.lbl,
+            marginBottom: 8,
+          }}
+        >
+          {label}
+        </div>
 
         <div
           style={{
-            border: "1.5px dashed #334155",
+            border:
+              "1.5px dashed #334155",
+
             borderRadius: 12,
             padding: 14,
             background: "#0F172A",
           }}
         >
           {value ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                flexWrap: "wrap",
+              }}
+            >
               <img
                 src={value}
                 alt={label}
@@ -136,16 +406,39 @@ export default function CertificateSettings({ onBack, adminProfile }) {
                 }}
               />
 
-              <div style={{ flex: 1, minWidth: 160 }}>
-                <div style={{ color: "#22C55E", fontWeight: 800, fontSize: 13 }}>
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 160,
+                }}
+              >
+                <div
+                  style={{
+                    color: "#22C55E",
+                    fontWeight: 800,
+                    fontSize: 13,
+                  }}
+                >
                   Image selected
                 </div>
-                <div style={{ color: "#64748B", fontSize: 12, marginTop: 4 }}>
-                  This image will be printed on certificate PDF.
+
+                <div
+                  style={{
+                    color: "#64748B",
+                    fontSize: 12,
+                    marginTop: 4,
+                  }}
+                >
+                  This image will appear in
+                  preview and final certificate.
                 </div>
               </div>
 
-              <Btn onClick={onRemove} color="#EF4444" sm>
+              <Btn
+                onClick={onRemove}
+                color="#EF4444"
+                sm
+              >
                 Remove
               </Btn>
             </div>
@@ -153,8 +446,13 @@ export default function CertificateSettings({ onBack, adminProfile }) {
             <div>
               <input
                 type="file"
-                accept="image/*"
-                onChange={(e) => readImage(e.target.files?.[0], onChange)}
+                accept="image/png,image/jpeg,image/jpg,image/webp"
+                onChange={(event) =>
+                  readImage(
+                    event.target.files?.[0],
+                    onChange
+                  )
+                }
                 style={{
                   width: "100%",
                   color: "#94A3B8",
@@ -162,7 +460,13 @@ export default function CertificateSettings({ onBack, adminProfile }) {
                 }}
               />
 
-              <div style={{ color: "#64748B", fontSize: 11, marginTop: 8 }}>
+              <div
+                style={{
+                  color: "#64748B",
+                  fontSize: 11,
+                  marginTop: 8,
+                }}
+              >
                 {hint}
               </div>
             </div>
@@ -175,12 +479,31 @@ export default function CertificateSettings({ onBack, adminProfile }) {
   return (
     <div style={S.pg}>
       <div style={S.wrap}>
-        <TopBar onBack={onBack} title="🏛️ Certificate Settings" />
+        <TopBar
+          onBack={onBack}
+          title="🏛️ Certificate Settings"
+        />
 
-        <Msg type={msg.includes("wrong") ? "error" : "success"} text={msg} />
+        <Msg
+          type={
+            msg.includes("wrong") ||
+            msg.includes("Please") ||
+            msg.includes("could not") ||
+            msg.includes("less than")
+              ? "error"
+              : "success"
+          }
+          text={msg}
+        />
 
         {loading && (
-          <div style={{ textAlign: "center", padding: "40px 0", color: "#64748B" }}>
+          <div
+            style={{
+              textAlign: "center",
+              padding: "40px 0",
+              color: "#64748B",
+            }}
+          >
             Loading certificate settings...
           </div>
         )}
@@ -188,50 +511,136 @@ export default function CertificateSettings({ onBack, adminProfile }) {
         {!loading && (
           <>
             <Card>
-              <div style={{ ...S.lbl, marginBottom: 12 }}>
+              <div
+                style={{
+                  ...S.lbl,
+                  marginBottom: 12,
+                }}
+              >
                 Certificate Basic Details
               </div>
 
               <Field
                 label="Institute / Admin Name *"
                 value={instituteName}
-                onChange={(e) => setInstituteName(e.target.value)}
-                placeholder="e.g. SDL English Academy"
+                onChange={(event) =>
+                  setInstituteName(
+                    event.target.value
+                  )
+                }
+                placeholder="e.g. Bright Future Institute"
+              />
+
+              <Field
+                label="Academy Title *"
+                value={academyTitle}
+                onChange={(event) =>
+                  setAcademyTitle(
+                    event.target.value
+                  )
+                }
+                placeholder="e.g. English Learning Academy"
               />
 
               <Field
                 label="Course Name *"
                 value={courseName}
-                onChange={(e) => setCourseName(e.target.value)}
+                onChange={(event) =>
+                  setCourseName(
+                    event.target.value
+                  )
+                }
                 placeholder="e.g. English Practice Course"
               />
 
               <Field
-                label="Admin Name / Signature Name"
+                label="Admin / Instructor Name"
                 value={adminName}
-                onChange={(e) => setAdminName(e.target.value)}
+                onChange={(event) =>
+                  setAdminName(
+                    event.target.value
+                  )
+                }
                 placeholder="e.g. Narendra Kushwaha"
               />
 
-              <div style={{ marginBottom: 14 }}>
-                <div style={{ ...S.lbl, marginBottom: 8 }}>
+              <div
+                style={{
+                  marginBottom: 14,
+                }}
+              >
+                <div
+                  style={{
+                    ...S.lbl,
+                    marginBottom: 8,
+                  }}
+                >
                   Default Course End Date
                 </div>
 
                 <input
                   type="date"
                   value={defaultEndDate}
-                  onChange={(e) => setDefaultEndDate(e.target.value)}
+                  onChange={(event) =>
+                    setDefaultEndDate(
+                      event.target.value
+                    )
+                  }
                   style={{
                     ...S.inp,
                     colorScheme: "dark",
                   }}
                 />
               </div>
+
+              <div
+                style={{
+                  marginBottom: 4,
+                }}
+              >
+                <div
+                  style={{
+                    ...S.lbl,
+                    marginBottom: 8,
+                  }}
+                >
+                  Default Level
+                </div>
+
+                <select
+                  value={defaultLevel}
+                  onChange={(event) =>
+                    setDefaultLevel(
+                      event.target.value
+                    )
+                  }
+                  style={{
+                    ...S.inp,
+                    colorScheme: "dark",
+                  }}
+                >
+                  <option value="Beginner">
+                    Beginner
+                  </option>
+
+                  <option value="Intermediate">
+                    Intermediate
+                  </option>
+
+                  <option value="Advanced">
+                    Advanced
+                  </option>
+                </select>
+              </div>
             </Card>
 
             <Card>
-              <div style={{ ...S.lbl, marginBottom: 12 }}>
+              <div
+                style={{
+                  ...S.lbl,
+                  marginBottom: 12,
+                }}
+              >
                 Certificate Images
               </div>
 
@@ -239,106 +648,98 @@ export default function CertificateSettings({ onBack, adminProfile }) {
                 label="Institute Logo"
                 value={logo}
                 onChange={setLogo}
-                onRemove={() => setLogo("")}
-                hint="Upload institute logo. PNG/JPG recommended."
+                onRemove={() =>
+                  setLogo("")
+                }
+                hint="Upload PNG, JPG or WEBP. Maximum size: 900 KB."
               />
 
               <ImageUploader
                 label="Digital Signature"
                 value={signature}
                 onChange={setSignature}
-                onRemove={() => setSignature("")}
-                hint="Upload transparent PNG signature for best result."
+                onRemove={() =>
+                  setSignature("")
+                }
+                hint="Transparent PNG signature gives the best result."
               />
 
               <ImageUploader
                 label="Institute Seal"
                 value={seal}
                 onChange={setSeal}
-                onRemove={() => setSeal("")}
-                hint="Upload institute seal/stamp image."
+                onRemove={() =>
+                  setSeal("")
+                }
+                hint="Upload a transparent institute seal or stamp image."
               />
             </Card>
 
             <Card>
-              <div style={{ ...S.lbl, marginBottom: 12 }}>
-                Preview
+              <div
+                style={{
+                  ...S.lbl,
+                  marginBottom: 12,
+                }}
+              >
+                Live Certificate Preview
               </div>
 
               <div
                 style={{
-                  background: "#FFFDF5",
-                  border: "4px solid #D4AF37",
-                  borderRadius: 14,
-                  padding: 18,
-                  color: "#0F172A",
-                  textAlign: "center",
+                  width: "100%",
+                  overflowX: "auto",
+                  overflowY: "hidden",
+                  borderRadius: 12,
+                  background: "#FFFFFF",
+                  border:
+                    "1px solid #334155",
                 }}
               >
                 <div
                   style={{
-                    background: "#0F172A",
-                    color: "#FCD34D",
-                    padding: "12px 16px",
-                    borderRadius: 10,
-                    fontWeight: 900,
-                    marginBottom: 18,
+                    width: 1123,
+                    transformOrigin:
+                      "top left",
+
+                    transform:
+                      "scale(0.64)",
+
+                    marginBottom: -270,
                   }}
                 >
-                  🏛️ {instituteName || "Institute Name"}
+                  <CertificateTemplate
+                    data={previewData}
+                    width="1123px"
+                    height={794}
+                    title="Certificate Live Preview"
+                  />
                 </div>
+              </div>
 
-                <div style={{ fontSize: 18, fontWeight: 900, color: "#D4AF37" }}>
-                  CERTIFICATE OF COMPLETION
-                </div>
-
-                <div style={{ margin: "14px 0", color: "#374151", fontSize: 13 }}>
-                  This certificate will be generated for eligible students.
-                </div>
-
-                <div style={{ fontSize: 24, fontWeight: 900, color: "#B8860B" }}>
-                  ★ Student Name ★
-                </div>
-
-                <div style={{ marginTop: 12, fontSize: 13, color: "#374151" }}>
-                  Course: {courseName || "English Practice Course"}
-                </div>
-
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(3,1fr)",
-                    border: "1px solid #D4AF37",
-                    marginTop: 18,
-                    fontSize: 12,
-                  }}
-                >
-                  <div style={{ padding: 8, borderRight: "1px solid #D4AF37" }}>
-                    <b>Total Score</b>
-                    <br />
-                    245 pts
-                  </div>
-                  <div style={{ padding: 8, borderRight: "1px solid #D4AF37" }}>
-                    <b>Correct</b>
-                    <br />
-                    38 / 45
-                  </div>
-                  <div style={{ padding: 8 }}>
-                    <b>Accuracy</b>
-                    <br />
-                    84.4%
-                  </div>
-                </div>
-
-                <div style={{ marginTop: 18, display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-                  <span>Admin Signature</span>
-                  <span>Institute Seal</span>
-                </div>
+              <div
+                style={{
+                  marginTop: 10,
+                  color: "#64748B",
+                  fontSize: 11,
+                  lineHeight: 1.6,
+                }}
+              >
+                This preview uses the same
+                shared template as the final
+                certificate.
               </div>
             </Card>
 
-            <Btn onClick={saveSettings} disabled={saving} color="#22C55E" full>
-              {saving ? "Saving..." : "Save Certificate Settings"}
+            <Btn
+              onClick={saveSettings}
+              disabled={saving}
+              color="#22C55E"
+              full
+            >
+              {saving
+                ? "Saving..."
+                : "Save Certificate Settings"}
             </Btn>
           </>
         )}
