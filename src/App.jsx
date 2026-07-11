@@ -7,11 +7,17 @@ import StudentHome       from "./components/student/StudentHome";
 import AdminPanel        from "./components/admin/AdminPanel";
 import DeveloperPanel    from "./components/developer/DeveloperPanel";
 import { S } from "./data/questions";
+import VerifyCertificate from "./components/shared/VerifyCertificate";
 
 export default function App() {
   const { user, profile, loading } = useAuth();
+  const params = new URLSearchParams(window.location.search);
+  const verifyCertificateId = params.get("verify");
   const [authScreen, setAuthScreen]     = useState("login");
   const [registerRole, setRegisterRole] = useState("student");
+  if (verifyCertificateId) {
+    return <VerifyCertificate certificateId={verifyCertificateId} />;
+  }
 
   if (loading) return (
     <div style={{ ...S.pg, display:"flex", alignItems:"center", justifyContent:"center" }}>

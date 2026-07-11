@@ -1,15 +1,29 @@
 import { useEffect, useState } from "react";
-import { fsWhere, fsGet, fsSet } from "../../utils/store";
+import {
+  fsWhere,
+  fsGet,
+  fsSet,
+} from "../../utils/store";
+import { createCertificateId } from "../../utils/certificatePdf";
 import { S } from "../../data/questions";
-import { Btn, TopBar, Msg, Card } from "../shared/UI";
+import {
+  Btn,
+  TopBar,
+  Msg,
+  Card,
+} from "../shared/UI";
 
-export default function CertificateManager({ onBack, adminProfile }) {
+export default function CertificateManager({
+  onBack,
+  adminProfile,
+}) {
   const [students, setStudents] = useState([]);
   const [certificates, setCertificates] = useState({});
   const [progressMap, setProgressMap] = useState({});
   const [settings, setSettings] = useState(null);
 
   const [loading, setLoading] = useState(true);
+  const [processingUid, setProcessingUid] = useState("");
   const [search, setSearch] = useState("");
   const [msg, setMsg] = useState("");
 
@@ -19,140 +33,434 @@ export default function CertificateManager({ onBack, adminProfile }) {
     loadData();
   }, []);
 
+  function showMessage(message) {
+    setMsg(message);
+
+    setTimeout(() => {
+      setMsg("");
+    }, 3000);
+  }
+
   async function loadData() {
     setLoading(true);
 
-    const all = await fsWhere("users", "adminId", "==", adminId);
-    const list = all.filter((u) => u.role === "student");
+    try {
+      const all = await fsWhere(
+        "users",
+        "adminId",
+        "==",
+        adminId
+      );
 
-    const certMap = {};
-    const progMap = {};
+      const list = all.filter(
+        (user) => user.role === "student"
+      );
 
-    await Promise.all(
-      list.map(async (student) => {
-        const cert = await fsGet("certificates", student.uid);
-        const progress = await fsGet("progress", student.uid);
+      const certMap = {};
+      const progMap = {};
 
-        certMap[student.uid] = cert || {
-          adminId,
-          studentId: student.uid,
-          studentName: student.fullName,
-          studentEmail: student.email,
-          allowed: false,
-          allowDownload: false,
-          endDate: "",
-        };
+      await Promise.all(
+        list.map(async (student) => {
+          const certificate = await fsGet(
+            "certificates",
+            student.uid
+          );
 
-        progMap[student.uid] = progress || {
-          totalScore: 0,
-          totalCorrect: 0,
-          totalWrong: 0,
-          totalAttempted: 0,
-        };
-      })
-    );
+          const progress = await fsGet(
+            "progress",
+            student.uid
+          );
 
-    const certSettings = await fsGet("certificateSettings", adminId);
+          certMap[student.uid] =
+            certificate || {
+              adminId,
+              studentId: student.uid,
+              studentName:
+                student.fullName || "",
+              studentEmail:
+                student.email || "",
+              certificateId:
+                createCertificateId(
+                  student.uid
+                ),
+              allowed: false,
+              allowDownload: false,
+              status: "locked",
+              endDate: "",
+            };
 
-    setStudents(list);
-    setCertificates(certMap);
-    setProgressMap(progMap);
-    setSettings(certSettings || null);
-    setLoading(false);
+          progMap[student.uid] =
+            progress || {
+              totalScore: 0,
+              totalCorrect: 0,
+              totalWrong: 0,
+              totalAttempted: 0,
+              currentLevel: "Advanced",
+            };
+        })
+      );
+
+      const certificateSettings = await fsGet(
+        "certificateSettings",
+        adminId
+      );
+
+      setStudents(list);
+      setCertificates(certMap);
+      setProgressMap(progMap);
+      setSettings(
+        certificateSettings || null
+      );
+    } catch (error) {
+      console.error(
+        "Certificate data load failed:",
+        error
+      );
+
+      showMessage(
+        "Certificate data could not be loaded."
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   function setEndDate(uid, endDate) {
-    setCertificates((prev) => ({
-      ...prev,
+    setCertificates((previous) => ({
+      ...previous,
+
       [uid]: {
-        ...(prev[uid] || {}),
+        ...(previous[uid] || {}),
         endDate,
       },
     }));
   }
 
-  async function toggleCertificate(student) {
-    const current = certificates[student.uid] || {};
-    const progress = progressMap[student.uid] || {};
-    const nextAllowed = !current.allowed;
-
-    if (nextAllowed && !current.endDate) {
-      setMsg("Please select end date before allowing certificate.");
-      setTimeout(() => setMsg(""), 2500);
-      return;
-    }
-
-    const totalCorrect = progress.totalCorrect || 0;
-    const totalWrong = progress.totalWrong || 0;
-    const completed = totalCorrect + totalWrong;
-    const accuracy =
-      completed > 0 ? Math.round((totalCorrect / completed) * 100) : 0;
-
-    const payload = {
-      adminId,
-      studentId: student.uid,
-      studentName: student.fullName || "",
-      studentEmail: student.email || "",
-      allowed: nextAllowed,
-      allowDownload: nextAllowed,
-      endDate: current.endDate || "",
-      allowedAt: nextAllowed ? Date.now() : current.allowedAt || null,
-      disabledAt: nextAllowed ? null : Date.now(),
-      totalScore: progress.totalScore || 0,
-      totalCorrect,
-      totalWrong,
-      totalCompleted: completed,
-      accuracy,
-      instituteName:
-        settings?.instituteName ||
-        adminProfile?.instituteName ||
-        adminProfile?.fullName ||
-        "Institute",
-      courseName: settings?.courseName || "English Practice Course",
-      adminName: settings?.adminName || adminProfile?.fullName || "Admin",
-    };
-
-    await fsSet("certificates", student.uid, payload);
-
-    setCertificates((prev) => ({
-      ...prev,
-      [student.uid]: {
-        id: student.uid,
-        ...payload,
-      },
-    }));
-
-    setMsg(
-      `${student.fullName}'s certificate has been ${
-        nextAllowed ? "allowed" : "disabled"
-      }.`
-    );
-
-    setTimeout(() => setMsg(""), 2500);
-  }
-
   function getStats(uid) {
-    const p = progressMap[uid] || {};
-    const totalCorrect = p.totalCorrect || 0;
-    const totalWrong = p.totalWrong || 0;
-    const completed = totalCorrect + totalWrong;
+    const progress =
+      progressMap[uid] || {};
+
+    const totalCorrect =
+      Number(progress.totalCorrect) || 0;
+
+    const totalWrong =
+      Number(progress.totalWrong) || 0;
+
+    const completed =
+      totalCorrect + totalWrong;
+
     const accuracy =
-      completed > 0 ? Math.round((totalCorrect / completed) * 100) : 0;
+      completed > 0
+        ? Number(
+            (
+              (totalCorrect / completed) *
+              100
+            ).toFixed(1)
+          )
+        : 0;
 
     return {
-      totalScore: p.totalScore || 0,
+      totalScore:
+        Number(progress.totalScore) || 0,
+
       totalCorrect,
       totalWrong,
       completed,
       accuracy,
+
+      level:
+        progress.currentLevel ||
+        settings?.defaultLevel ||
+        "Advanced",
     };
   }
 
+  async function toggleCertificate(student) {
+    const current =
+      certificates[student.uid] || {};
+
+    const progress =
+      progressMap[student.uid] || {};
+
+    const nextAllowed =
+      !Boolean(current.allowed);
+
+    if (
+      nextAllowed &&
+      !current.endDate
+    ) {
+      showMessage(
+        "Please select end date before allowing certificate."
+      );
+
+      return;
+    }
+
+    setProcessingUid(student.uid);
+
+    try {
+      const stats = getStats(
+        student.uid
+      );
+
+      const certificateId =
+        current.certificateId ||
+        createCertificateId(
+          student.uid
+        );
+
+      const now = Date.now();
+
+      const issuedAt = nextAllowed
+        ? current.issuedAt ||
+          current.allowedAt ||
+          now
+        : current.issuedAt ||
+          current.allowedAt ||
+          null;
+
+      const instituteName =
+        settings?.instituteName ||
+        adminProfile?.instituteName ||
+        adminProfile?.fullName ||
+        "Institute";
+
+      const academyTitle =
+        settings?.academyTitle ||
+        settings?.courseTitle ||
+        "English Learning Academy";
+
+      const courseName =
+        settings?.courseName ||
+        "English Practice Course";
+
+      const adminName =
+        settings?.adminName ||
+        adminProfile?.fullName ||
+        "Admin";
+
+      const startDate =
+        current.startDate ||
+        student.joiningDate ||
+        student.createdAt ||
+        student._at ||
+        null;
+
+      /*
+       * Existing student-side record.
+       * StudentHome isi document ko student.uid se read karta hai.
+       */
+      const studentCertificatePayload = {
+        adminId,
+        studentId: student.uid,
+        studentName:
+          student.fullName || "",
+        studentEmail:
+          student.email || "",
+
+        certificateId,
+
+        allowed: nextAllowed,
+        allowDownload: nextAllowed,
+
+        status: nextAllowed
+          ? "active"
+          : "revoked",
+
+        verified: nextAllowed,
+
+        startDate,
+        endDate:
+          current.endDate || "",
+
+        allowedAt: nextAllowed
+          ? current.allowedAt || now
+          : current.allowedAt || null,
+
+        issuedAt,
+
+        disabledAt: nextAllowed
+          ? null
+          : now,
+
+        revokedAt: nextAllowed
+          ? null
+          : now,
+
+        totalScore:
+          stats.totalScore,
+
+        totalCorrect:
+          stats.totalCorrect,
+
+        totalWrong:
+          stats.totalWrong,
+
+        totalCompleted:
+          stats.completed,
+
+        totalAttempted:
+          stats.completed,
+
+        accuracy:
+          stats.accuracy,
+
+        level:
+          stats.level,
+
+        instituteName,
+        academyTitle,
+        courseName,
+        adminName,
+
+        updatedAt: now,
+      };
+
+      /*
+       * Public QR verification record.
+       * Document ID exactly certificateId hoga.
+       */
+      const verificationPayload = {
+        certificateId,
+
+        status: nextAllowed
+          ? "active"
+          : "revoked",
+
+        verified: nextAllowed,
+        active: nextAllowed,
+
+        studentId:
+          student.uid,
+
+        studentName:
+          student.fullName || "",
+
+        instituteName,
+        academyTitle,
+        courseName,
+        adminName,
+
+        startDate,
+        endDate:
+          current.endDate || "",
+
+        issueDate:
+          issuedAt,
+
+        issuedAt,
+
+        revokedAt: nextAllowed
+          ? null
+          : now,
+
+        totalScore:
+          stats.totalScore,
+
+        totalCorrect:
+          stats.totalCorrect,
+
+        totalWrong:
+          stats.totalWrong,
+
+        totalCompleted:
+          stats.completed,
+
+        totalAttempted:
+          stats.completed,
+
+        accuracy:
+          stats.accuracy,
+
+        level:
+          stats.level,
+
+        adminId,
+
+        createdAt:
+          current.createdAt ||
+          issuedAt ||
+          now,
+
+        updatedAt: now,
+      };
+
+      const [
+        studentRecordSaved,
+        verificationRecordSaved,
+      ] = await Promise.all([
+        fsSet(
+          "certificates",
+          student.uid,
+          studentCertificatePayload
+        ),
+
+        fsSet(
+          "certificateVerifications",
+          certificateId,
+          verificationPayload
+        ),
+      ]);
+
+      if (
+        !studentRecordSaved ||
+        !verificationRecordSaved
+      ) {
+        throw new Error(
+          "Certificate records could not be saved."
+        );
+      }
+
+      setCertificates(
+        (previous) => ({
+          ...previous,
+
+          [student.uid]: {
+            id: student.uid,
+            ...studentCertificatePayload,
+          },
+        })
+      );
+
+      showMessage(
+        nextAllowed
+          ? `${student.fullName}'s certificate has been allowed and activated for QR verification.`
+          : `${student.fullName}'s certificate has been disabled and marked as revoked.`
+      );
+    } catch (error) {
+      console.error(
+        "Certificate update failed:",
+        error
+      );
+
+      showMessage(
+        "Certificate update failed. Please try again."
+      );
+    } finally {
+      setProcessingUid("");
+    }
+  }
+
   const filtered = students.filter(
-    (s) =>
-      s.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-      s.email?.toLowerCase().includes(search.toLowerCase())
+    (student) =>
+      student.fullName
+        ?.toLowerCase()
+        .includes(
+          search.toLowerCase()
+        ) ||
+      student.email
+        ?.toLowerCase()
+        .includes(
+          search.toLowerCase()
+        )
   );
+
+  const messageType =
+    msg.includes("Please") ||
+    msg.includes("failed") ||
+    msg.includes("could not")
+      ? "error"
+      : "success";
 
   return (
     <div style={S.pg}>
@@ -163,15 +471,22 @@ export default function CertificateManager({ onBack, adminProfile }) {
           right={
             <button
               onClick={loadData}
+              disabled={loading}
               style={{
                 background: "#1E293B",
-                border: "1.5px solid #334155",
+                border:
+                  "1.5px solid #334155",
                 color: "#94A3B8",
                 borderRadius: 8,
                 padding: "7px 12px",
-                cursor: "pointer",
+                cursor: loading
+                  ? "not-allowed"
+                  : "pointer",
                 fontSize: 12,
                 fontWeight: 600,
+                opacity: loading
+                  ? 0.6
+                  : 1,
               }}
             >
               ↻
@@ -179,29 +494,44 @@ export default function CertificateManager({ onBack, adminProfile }) {
           }
         />
 
-        <Msg type={msg.includes("Please") ? "error" : "success"} text={msg} />
+        <Msg
+          type={messageType}
+          text={msg}
+        />
 
         {!settings && (
           <div
             style={{
               ...S.card,
-              borderColor: "#F59E0B55",
-              background: "#451A0322",
+              borderColor:
+                "#F59E0B55",
+              background:
+                "#451A0322",
               color: "#FDE68A",
               fontSize: 13,
               lineHeight: 1.7,
             }}
           >
-            ⚠️ Certificate settings are not completed yet. Please open
-            Certificate Settings and save institute name, signature and seal.
+            ⚠️ Certificate settings
+            are not completed yet.
+            Please open Certificate
+            Settings and save institute
+            name, signature and seal.
           </div>
         )}
 
         <input
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(event) =>
+            setSearch(
+              event.target.value
+            )
+          }
           placeholder="🔍 Search student by name or email..."
-          style={{ ...S.inp, marginBottom: 16 }}
+          style={{
+            ...S.inp,
+            marginBottom: 16,
+          }}
         />
 
         {loading && (
@@ -216,23 +546,54 @@ export default function CertificateManager({ onBack, adminProfile }) {
           </div>
         )}
 
-        {!loading && filtered.length === 0 && (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "40px 0",
-              color: "#475569",
-            }}
-          >
-            <div style={{ fontSize: 42, marginBottom: 12 }}>🎓</div>
-            <div>No students found.</div>
-          </div>
-        )}
+        {!loading &&
+          filtered.length === 0 && (
+            <div
+              style={{
+                textAlign: "center",
+                padding: "40px 0",
+                color: "#475569",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 42,
+                  marginBottom: 12,
+                }}
+              >
+                🎓
+              </div>
+
+              <div>
+                No students found.
+              </div>
+            </div>
+          )}
 
         {!loading &&
           filtered.map((student) => {
-            const cert = certificates[student.uid] || {};
-            const stats = getStats(student.uid);
+            const certificate =
+              certificates[
+                student.uid
+              ] || {};
+
+            const stats =
+              getStats(student.uid);
+
+            const isProcessing =
+              processingUid ===
+              student.uid;
+
+            const isAllowed =
+              Boolean(
+                certificate.allowed
+              );
+
+            const certificateStatus =
+              certificate.status ||
+              (isAllowed
+                ? "active"
+                : "locked");
 
             return (
               <Card key={student.uid}>
@@ -249,56 +610,161 @@ export default function CertificateManager({ onBack, adminProfile }) {
                     style={{
                       width: 44,
                       height: 44,
-                      borderRadius: "50%",
-                      background: cert.allowed ? "#14532D" : "#1E293B",
+                      borderRadius:
+                        "50%",
+
+                      background:
+                        isAllowed
+                          ? "#14532D"
+                          : "#1E293B",
+
                       border: `2px solid ${
-                        cert.allowed ? "#22C55E" : "#334155"
+                        isAllowed
+                          ? "#22C55E"
+                          : "#334155"
                       }`,
+
                       display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      alignItems:
+                        "center",
+                      justifyContent:
+                        "center",
                       fontSize: 20,
                     }}
                   >
                     🎓
                   </div>
 
-                  <div style={{ flex: 1, minWidth: 160 }}>
-                    <div style={{ fontWeight: 800, fontSize: 15 }}>
-                      {student.fullName}
+                  <div
+                    style={{
+                      flex: 1,
+                      minWidth: 160,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontWeight: 800,
+                        fontSize: 15,
+                      }}
+                    >
+                      {
+                        student.fullName
+                      }
                     </div>
-                    <div style={{ color: "#64748B", fontSize: 12 }}>
+
+                    <div
+                      style={{
+                        color:
+                          "#64748B",
+                        fontSize: 12,
+                      }}
+                    >
                       {student.email}
                     </div>
 
-                    <div style={{ marginTop: 6 }}>
-                      {cert.allowed ? (
-                        <span
-                          style={{
-                            background: "#14532D",
-                            border: "1px solid #22C55E",
-                            color: "#86EFAC",
-                            borderRadius: 6,
-                            padding: "2px 8px",
-                            fontSize: 11,
-                            fontWeight: 800,
-                          }}
-                        >
-                          CERTIFICATE ALLOWED
-                        </span>
+                    {certificate.certificateId && (
+                      <div
+                        style={{
+                          color:
+                            "#94A3B8",
+                          fontSize: 10,
+                          marginTop: 4,
+                          wordBreak:
+                            "break-all",
+                        }}
+                      >
+                        ID:{" "}
+                        {
+                          certificate.certificateId
+                        }
+                      </div>
+                    )}
+
+                    <div
+                      style={{
+                        marginTop: 7,
+                        display: "flex",
+                        gap: 6,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      {isAllowed ? (
+                        <>
+                          <span
+                            style={{
+                              background:
+                                "#14532D",
+                              border:
+                                "1px solid #22C55E",
+                              color:
+                                "#86EFAC",
+                              borderRadius:
+                                6,
+                              padding:
+                                "2px 8px",
+                              fontSize: 11,
+                              fontWeight:
+                                800,
+                            }}
+                          >
+                            CERTIFICATE
+                            ALLOWED
+                          </span>
+
+                          <span
+                            style={{
+                              background:
+                                "#052E16",
+                              border:
+                                "1px solid #16A34A",
+                              color:
+                                "#BBF7D0",
+                              borderRadius:
+                                6,
+                              padding:
+                                "2px 8px",
+                              fontSize: 11,
+                              fontWeight:
+                                800,
+                            }}
+                          >
+                            QR ACTIVE
+                          </span>
+                        </>
                       ) : (
                         <span
                           style={{
-                            background: "#1E293B",
-                            border: "1px solid #334155",
-                            color: "#94A3B8",
+                            background:
+                              certificateStatus ===
+                              "revoked"
+                                ? "#450A0A"
+                                : "#1E293B",
+
+                            border: `1px solid ${
+                              certificateStatus ===
+                              "revoked"
+                                ? "#EF4444"
+                                : "#334155"
+                            }`,
+
+                            color:
+                              certificateStatus ===
+                              "revoked"
+                                ? "#FCA5A5"
+                                : "#94A3B8",
+
                             borderRadius: 6,
-                            padding: "2px 8px",
+                            padding:
+                              "2px 8px",
                             fontSize: 11,
-                            fontWeight: 800,
+                            fontWeight:
+                              800,
                           }}
                         >
-                          LOCKED
+                          {certificateStatus ===
+                          "revoked"
+                            ? "CERTIFICATE REVOKED"
+                            : "LOCKED"}
                         </span>
                       )}
                     </div>
@@ -308,24 +774,53 @@ export default function CertificateManager({ onBack, adminProfile }) {
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(4,1fr)",
+                    gridTemplateColumns:
+                      "repeat(4,1fr)",
                     gap: 8,
                     padding: "10px 0",
-                    borderTop: "1px solid #334155",
-                    borderBottom: "1px solid #334155",
+                    borderTop:
+                      "1px solid #334155",
+                    borderBottom:
+                      "1px solid #334155",
                     marginBottom: 12,
                   }}
                 >
-                  <MiniStat label="Score" value={stats.totalScore} color="#FCD34D" />
-                  <MiniStat label="Correct" value={stats.totalCorrect} color="#22C55E" />
-                  <MiniStat label="Completed" value={stats.completed} color="#60A5FA" />
-                  <MiniStat label="Accuracy" value={`${stats.accuracy}%`} color="#F59E0B" />
+                  <MiniStat
+                    label="Score"
+                    value={
+                      stats.totalScore
+                    }
+                    color="#FCD34D"
+                  />
+
+                  <MiniStat
+                    label="Correct"
+                    value={
+                      stats.totalCorrect
+                    }
+                    color="#22C55E"
+                  />
+
+                  <MiniStat
+                    label="Completed"
+                    value={
+                      stats.completed
+                    }
+                    color="#60A5FA"
+                  />
+
+                  <MiniStat
+                    label="Accuracy"
+                    value={`${stats.accuracy}%`}
+                    color="#F59E0B"
+                  />
                 </div>
 
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr auto",
+                    gridTemplateColumns:
+                      "minmax(0,1fr) auto",
                     gap: 10,
                     alignItems: "end",
                   }}
@@ -333,7 +828,8 @@ export default function CertificateManager({ onBack, adminProfile }) {
                   <div>
                     <div
                       style={{
-                        color: "#94A3B8",
+                        color:
+                          "#94A3B8",
                         fontSize: 12,
                         fontWeight: 700,
                         marginBottom: 6,
@@ -344,27 +840,62 @@ export default function CertificateManager({ onBack, adminProfile }) {
 
                     <input
                       type="date"
-                      value={cert.endDate || ""}
-                      onChange={(e) => setEndDate(student.uid, e.target.value)}
+                      value={
+                        certificate.endDate ||
+                        ""
+                      }
+                      onChange={(
+                        event
+                      ) =>
+                        setEndDate(
+                          student.uid,
+                          event.target
+                            .value
+                        )
+                      }
+                      disabled={
+                        isProcessing
+                      }
                       style={{
                         ...S.inp,
-                        colorScheme: "dark",
-                        padding: "10px 12px",
+                        colorScheme:
+                          "dark",
+                        padding:
+                          "10px 12px",
                         fontSize: 13,
+                        opacity:
+                          isProcessing
+                            ? 0.7
+                            : 1,
                       }}
                     />
                   </div>
 
                   <Btn
-                    onClick={() => toggleCertificate(student)}
-                    color={cert.allowed ? "#EF4444" : "#22C55E"}
+                    onClick={() =>
+                      toggleCertificate(
+                        student
+                      )
+                    }
+                    disabled={
+                      isProcessing
+                    }
+                    color={
+                      isAllowed
+                        ? "#EF4444"
+                        : "#22C55E"
+                    }
                     sm
                   >
-                    {cert.allowed ? "Disable" : "Allow Download"}
+                    {isProcessing
+                      ? "Updating..."
+                      : isAllowed
+                      ? "Disable"
+                      : "Allow Download"}
                   </Btn>
                 </div>
 
-                {cert.allowed && (
+                {isAllowed && (
                   <div
                     style={{
                       color: "#86EFAC",
@@ -373,9 +904,31 @@ export default function CertificateManager({ onBack, adminProfile }) {
                       lineHeight: 1.6,
                     }}
                   >
-                    ✅ Student can now download certificate from dashboard.
+                    ✅ Student can
+                    download the
+                    certificate and QR
+                    verification is active.
                   </div>
                 )}
+
+                {certificateStatus ===
+                  "revoked" &&
+                  !isAllowed && (
+                    <div
+                      style={{
+                        color:
+                          "#FCA5A5",
+                        fontSize: 12,
+                        marginTop: 10,
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      ❌ Certificate is
+                      revoked. QR scan will
+                      show the revoked
+                      status.
+                    </div>
+                  )}
               </Card>
             );
           })}
@@ -384,11 +937,35 @@ export default function CertificateManager({ onBack, adminProfile }) {
   );
 }
 
-function MiniStat({ label, value, color }) {
+function MiniStat({
+  label,
+  value,
+  color,
+}) {
   return (
-    <div style={{ textAlign: "center" }}>
-      <div style={{ color, fontWeight: 900, fontSize: 16 }}>{value}</div>
-      <div style={{ color: "#475569", fontSize: 10 }}>{label}</div>
+    <div
+      style={{
+        textAlign: "center",
+      }}
+    >
+      <div
+        style={{
+          color,
+          fontWeight: 900,
+          fontSize: 16,
+        }}
+      >
+        {value}
+      </div>
+
+      <div
+        style={{
+          color: "#475569",
+          fontSize: 10,
+        }}
+      >
+        {label}
+      </div>
     </div>
   );
 }

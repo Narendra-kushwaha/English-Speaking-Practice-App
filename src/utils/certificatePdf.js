@@ -167,10 +167,15 @@ export async function generateCertificatePdf({
     certificate.issueDate ||
     new Date();
 
-  const verificationUrl =
-    `${window.location.origin}/verify?certId=` +
-    encodeURIComponent(certificateId);
+    
+  // const verificationUrl =
+  //   `${window.location.origin}/verify?certId=` +
+  //   encodeURIComponent(certificateId);
 
+  const verificationUrl =
+  `${window.location.origin}?verify=` +
+  encodeURIComponent(certificateId);
+  
   const qrCode = await QRCode.toDataURL(
     verificationUrl,
     {
