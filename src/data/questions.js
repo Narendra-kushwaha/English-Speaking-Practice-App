@@ -8,7 +8,7 @@ export const LC = {
 
 // Shared styles
 export const S = {
-  pg:   { minHeight:"100vh", background:"#0F172A", fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", color:"#F8FAFC" },
+  pg: { minHeight:"100vh", background:"#0F172A", fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", color:"#F8FAFC", paddingTop:"env(safe-area-inset-top, 24px)" },
   wrap: { maxWidth:700, margin:"0 auto", padding:"16px 16px 48px", boxSizing:"border-box", width:"100%" },
   card: { background:"#1E293B", borderRadius:14, padding:"18px", marginBottom:14, border:"1.5px solid #334155", boxSizing:"border-box" },
   lbl:  { fontSize:10, letterSpacing:2, textTransform:"uppercase", fontWeight:700, marginBottom:8, color:"#64748B" },
