@@ -12,7 +12,7 @@ const id = String(studentId || "000001")
 .slice(-6)
 .toUpperCase();
 
-return CERT-${year}-${id || "000001"};
+return `CERT-${year}-${id || "000001"}`;
 }
 
 async function loadImage(source) {
@@ -169,13 +169,9 @@ const issueDate =
 certificate.issueDate ||
 new Date();
 
-// const verificationUrl =
-//   ${window.location.origin}/verify?certId= +
-//   encodeURIComponent(certificateId);
 
 const verificationUrl =
-${window.location.origin}?verify= +
-encodeURIComponent(certificateId);
+  `${window.location.origin}?verify=${encodeURIComponent(certificateId)}`;
 
 const qrCode = await QRCode.toDataURL(
 verificationUrl,
