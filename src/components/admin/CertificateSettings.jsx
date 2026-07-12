@@ -686,36 +686,22 @@ export default function CertificateSettings({
               </div>
 
               <div
-                style={{
-                  width: "100%",
-                  overflowX: "auto",
-                  overflowY: "hidden",
-                  borderRadius: 12,
-                  background: "#FFFFFF",
-                  border:
-                    "1px solid #334155",
-                }}
-              >
-                <div
-                  style={{
-                    width: 1123,
-                    transformOrigin:
-                      "top left",
-
-                    transform:
-                      "scale(0.64)",
-
-                    marginBottom: -270,
-                  }}
-                >
-                  <CertificateTemplate
-                    data={previewData}
-                    width="1123px"
-                    height={794}
-                    title="Certificate Live Preview"
-                  />
-                </div>
-              </div>
+  style={{
+    width: "100%",
+    maxWidth: "100%",
+    overflow: "hidden",
+    borderRadius: 12,
+    background: "#FFFFFF",
+    border: "1px solid #334155",
+  }}
+>
+  <CertificateTemplate
+    data={previewData}
+    width="100%"
+    height={520}
+    title="Certificate Live Preview"
+  />
+</div>
 
               <div
                 style={{
