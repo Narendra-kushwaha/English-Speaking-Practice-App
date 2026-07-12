@@ -1,4 +1,5 @@
 import QRCode from "qrcode";
+
 import {
   buildCertificateDocument,
   formatCertificateDate,
@@ -50,10 +51,8 @@ async function loadImage(source) {
   }
 }
 
-async function waitForImages(printWindow) {
-  const images = Array.from(
-    printWindow.document.images
-  );
+async function waitForDocumentImages(documentRef) {
+  const images = Array.from(documentRef?.images || []);
 
   await Promise.all(
     images.map(
@@ -69,6 +68,86 @@ async function waitForImages(printWindow) {
         })
     )
   );
+}
+
+function createPrintIframe() {
+  const oldIframe = document.getElementById(
+    "certificate-print-iframe"
+  );
+
+  if (oldIframe) {
+    oldIframe.remove();
+  }
+
+  const iframe = document.createElement("iframe");
+
+  iframe.id = "certificate-print-iframe";
+  iframe.setAttribute("title", "Certificate Print");
+  iframe.setAttribute("aria-hidden", "true");
+
+  Object.assign(iframe.style, {
+    position: "fixed",
+    width: "1px",
+    height: "1px",
+    right: "0",
+    bottom: "0",
+    border: "0",
+    opacity: "0",
+    pointerEvents: "none",
+    visibility: "hidden",
+  });
+
+  document.body.appendChild(iframe);
+
+  return iframe;
+}
+
+async function printCertificateHtml(html) {
+  const iframe = createPrintIframe();
+
+  const iframeWindow = iframe.contentWindow;
+  const iframeDocument = iframe.contentDocument;
+
+  if (!iframeWindow || !iframeDocument) {
+    iframe.remove();
+
+    throw new Error(
+      "Certificate print frame could not be created."
+    );
+  }
+
+  iframeDocument.open();
+  iframeDocument.write(html);
+  iframeDocument.close();
+
+  await new Promise((resolve) => {
+    if (iframeDocument.readyState === "complete") {
+      resolve();
+      return;
+    }
+
+    iframe.onload = resolve;
+
+    setTimeout(resolve, 1500);
+  });
+
+  await waitForDocumentImages(iframeDocument);
+
+  await new Promise((resolve) => {
+    setTimeout(resolve, 400);
+  });
+
+  try {
+    iframeWindow.focus();
+    iframeWindow.print();
+  } catch (error) {
+    iframe.remove();
+    throw error;
+  }
+
+  setTimeout(() => {
+    iframe.remove();
+  }, 3000);
 }
 
 export async function generateCertificatePdf({
@@ -167,15 +246,10 @@ export async function generateCertificatePdf({
     certificate.issueDate ||
     new Date();
 
-    
-  // const verificationUrl =
-  //   `${window.location.origin}/verify?certId=` +
-  //   encodeURIComponent(certificateId);
-
   const verificationUrl =
-  `${window.location.origin}?verify=` +
-  encodeURIComponent(certificateId);
-  
+    `${window.location.origin}?verify=` +
+    encodeURIComponent(certificateId);
+
   const qrCode = await QRCode.toDataURL(
     verificationUrl,
     {
@@ -235,32 +309,7 @@ export async function generateCertificatePdf({
       certificateData
     );
 
-  const printWindow = window.open(
-    "",
-    "_blank"
-  );
-
-  if (!printWindow) {
-    throw new Error(
-      "Popup blocked. Please allow popups for certificate download."
-    );
-  }
-
-  printWindow.document.open();
-  printWindow.document.write(html);
-  printWindow.document.close();
-
-  await new Promise((resolve) => {
-    printWindow.onload = resolve;
-  });
-
-  await waitForImages(printWindow);
-
-  printWindow.focus();
-
-  setTimeout(() => {
-    printWindow.print();
-  }, 500);
+  await printCertificateHtml(html);
 }
 
 export function getCertificatePreviewData({
