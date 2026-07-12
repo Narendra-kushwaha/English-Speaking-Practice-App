@@ -111,9 +111,7 @@ export function buildCertificateMarkup({
         <div class="certificate-inner">
           <div class="certificate-brand">
             <div class="certificate-brand-row">
-              ${logo
-                ? `<img src="${logo}" class="certificate-logo" alt="Institute Logo"/>`
-                : `<div class="certificate-logo-placeholder">EL</div>`}
+              ${logo ? `<img src="${logo}" class="certificate-logo" alt="Institute Logo"/>` : `<div class="certificate-logo-placeholder">EL</div>`}
               <div class="certificate-institute">${escapeCertificateHtml(instituteName)}</div>
             </div>
             <div class="certificate-academy">${escapeCertificateHtml(academyTitle)}</div>
@@ -173,17 +171,13 @@ export function buildCertificateMarkup({
           </div>
           <div class="certificate-footer">
             <div class="certificate-signature-block">
-              ${signature
-                ? `<img src="${signature}" class="certificate-signature-image" alt="Digital Signature"/>`
-                : `<div class="certificate-signature-script">${escapeCertificateHtml(instructorName)}</div>`}
+              ${signature ? `<img src="${signature}" class="certificate-signature-image" alt="Digital Signature"/>` : `<div class="certificate-signature-script">${escapeCertificateHtml(instructorName)}</div>`}
               <div class="certificate-signature-line"></div>
               <div class="certificate-signature-name">${escapeCertificateHtml(instructorName)}</div>
               <div class="certificate-signature-role">COURSE INSTRUCTOR</div>
             </div>
             <div class="certificate-seal-wrap">
-              ${seal
-                ? `<img src="${seal}" class="certificate-seal-image" alt="Institute Seal"/>`
-                : `<div class="certificate-seal-placeholder">VERIFIED<br/>CERTIFIED</div>`}
+              ${seal ? `<img src="${seal}" class="certificate-seal-image" alt="Institute Seal"/>` : `<div class="certificate-seal-placeholder">VERIFIED<br/>CERTIFIED</div>`}
             </div>
             <div class="certificate-signature-block">
               <div class="certificate-signature-script">${escapeCertificateHtml(instituteName)}</div>
@@ -208,7 +202,7 @@ export function buildCertificateDocument(data = {}, previewOptions = {}) {
   const mobilePreviewStyles = mobilePreview ? `
     html, body { width: 100%; height: 100%; overflow: hidden; }
     body { position: relative; }
-    .certificate-page { position: absolute; top: 0; left: 0; transform: scale(${previewScale}); transform-origin: top left; }
+    .certificate-page { position: absolute; top: 0; left: 0; transform: scale(${previewScale}); transform-origin: top left; width: ${A4_WIDTH_PX}px; height: ${A4_HEIGHT_PX}px; }
   ` : "";
   return `
     <!DOCTYPE html>
@@ -244,12 +238,27 @@ export default function CertificateTemplate({ data = {}, width = "100%", height 
   }, []);
 
   const mobileScale = isMobile && containerWidth > 0 ? containerWidth / A4_WIDTH_PX : 1;
-  const responsiveHeight = isMobile && containerWidth > 0 ? Math.ceil(A4_HEIGHT_PX * mobileScale) : height;
-  const documentHtml = useMemo(() => buildCertificateDocument(data, { mobilePreview: isMobile, previewScale: mobileScale }), [data, isMobile, mobileScale]);
+  const iframeWidth = isMobile && containerWidth > 0 ? containerWidth : A4_WIDTH_PX;
+  const iframeHeight = isMobile && containerWidth > 0 ? Math.ceil(A4_HEIGHT_PX * mobileScale) : height;
+
+  const documentHtml = useMemo(
+    () => buildCertificateDocument(data, { mobilePreview: isMobile, previewScale: mobileScale }),
+    [data, isMobile, mobileScale]
+  );
 
   return (
     <div ref={containerRef} style={{ width:"100%", overflow:"hidden", borderRadius:12, background:"#FFFFFF" }}>
-      <iframe title={title} srcDoc={documentHtml} style={{ width, height:responsiveHeight, border:"none", display:"block", background:"#FFFFFF" }} />
+      <iframe
+        title={title}
+        srcDoc={documentHtml}
+        style={{
+          width: iframeWidth,
+          height: iframeHeight,
+          border: "none",
+          display: "block",
+          background: "#FFFFFF",
+        }}
+      />
     </div>
   );
-      }
+}
