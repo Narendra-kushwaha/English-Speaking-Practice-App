@@ -12,13 +12,28 @@ function emptyProgress() {
     dailyStats: {},
     levelStats: {},
     lockedQuestions: {},
-    tabSwitchBlocked: {}, // { "2026-07-01": { fill: true, hindi: true, writing: true } }
+
+    // Example:
+    // {
+    //   "2026-07-15": {
+    //     fill: true,
+    //     hindi: true,
+    //     writing: true
+    //   }
+    // }
+    tabSwitchBlocked: {},
   };
 }
 
 export async function getProgress(uid) {
   const p = await fsGet("progress", uid);
-  return p ? { ...emptyProgress(), ...p } : emptyProgress();
+
+  return p
+    ? {
+        ...emptyProgress(),
+        ...p,
+      }
+    : emptyProgress();
 }
 
 export function getTodayStats(progress) {
@@ -26,28 +41,59 @@ export function getTodayStats(progress) {
     attempted: 0,
     correct: 0,
     wrong: 0,
+    points: 0,
   };
 }
 
-// Check if a mode is blocked today due to tab switch
+// Check whether a specific mode is blocked today
 export function isModeBlockedToday(progress, mode) {
   return progress?.tabSwitchBlocked?.[today()]?.[mode] === true;
 }
 
-// Block a mode for today due to tab switch
+// Block a specific mode for today
 export async function blockModeForToday(uid, mode) {
   const p = await getProgress(uid);
   const t = today();
-  if (!p.tabSwitchBlocked) p.tabSwitchBlocked = {};
-  if (!p.tabSwitchBlocked[t]) p.tabSwitchBlocked[t] = {};
+
+  if (!p.tabSwitchBlocked) {
+    p.tabSwitchBlocked = {};
+  }
+
+  if (!p.tabSwitchBlocked[t]) {
+    p.tabSwitchBlocked[t] = {};
+  }
+
   p.tabSwitchBlocked[t][mode] = true;
+
   await fsSet("progress", uid, p);
+
   return p;
 }
 
-// Check if a question is already locked
+// Admin can unblock only one selected mode
+export async function unblockModeForToday(uid, mode) {
+  const p = await getProgress(uid);
+  const t = today();
+
+  if (!p.tabSwitchBlocked) {
+    p.tabSwitchBlocked = {};
+  }
+
+  if (!p.tabSwitchBlocked[t]) {
+    p.tabSwitchBlocked[t] = {};
+  }
+
+  p.tabSwitchBlocked[t][mode] = false;
+
+  await fsSet("progress", uid, p);
+
+  return p;
+}
+
+// Check whether a question is already locked
 export function getQuestionState(progress, mode, level, questionId) {
   const key = `${mode}_${level}_${questionId}`;
+
   return (
     progress?.lockedQuestions?.[key] || {
       attempts: 0,
@@ -57,11 +103,19 @@ export function getQuestionState(progress, mode, level, questionId) {
   );
 }
 
-// ── RECORD AN ATTEMPT ────────────────────────────────────────────────────────
-export async function recordAttempt(uid, mode, level, questionId, isCorrect, points = 0) {
+// ── RECORD AN ATTEMPT ───────────────────────────────────────────────────────
+export async function recordAttempt(
+  uid,
+  mode,
+  level,
+  questionId,
+  isCorrect,
+  points = 0
+) {
   const p = await getProgress(uid);
 
   const key = `${mode}_${level}_${questionId}`;
+
   const existing = p.lockedQuestions[key] || {
     attempts: 0,
     correct: false,
@@ -83,18 +137,18 @@ export async function recordAttempt(uid, mode, level, questionId, isCorrect, poi
   p.totalAttempted += 1;
 
   const t = today();
-  if (!p.dailyStats[t]) {
-  p.dailyStats[t] = {
-    attempted: 0,
-    correct: 0,
-    wrong: 0,
-    points: 0
-  };
-} else if (p.dailyStats[t].points == null) {
-  p.dailyStats[t].points = 0;
-}
 
-  // if (!p.dailyStats[t]) p.dailyStats[t] = { attempted: 0, correct: 0, wrong: 0 };
+  if (!p.dailyStats[t]) {
+    p.dailyStats[t] = {
+      attempted: 0,
+      correct: 0,
+      wrong: 0,
+      points: 0,
+    };
+  } else if (p.dailyStats[t].points == null) {
+    p.dailyStats[t].points = 0;
+  }
+
   p.dailyStats[t].attempted += 1;
 
   if (willLock) {
@@ -102,18 +156,29 @@ export async function recordAttempt(uid, mode, level, questionId, isCorrect, poi
       p.totalCorrect += 1;
       p.dailyStats[t].correct += 1;
       p.totalScore += points;
+
       p.dailyStats[t].points =
-      (p.dailyStats[t].points || 0) + points;
-      // p.dailyStats[t].points += points;
+        (p.dailyStats[t].points || 0) + points;
     } else {
       p.totalWrong += 1;
       p.dailyStats[t].wrong += 1;
     }
 
-    if (!p.levelStats[level]) p.levelStats[level] = { attempted: 0, correct: 0, wrong: 0 };
+    if (!p.levelStats[level]) {
+      p.levelStats[level] = {
+        attempted: 0,
+        correct: 0,
+        wrong: 0,
+      };
+    }
+
     p.levelStats[level].attempted += 1;
-    if (isCorrect) p.levelStats[level].correct += 1;
-    else p.levelStats[level].wrong += 1;
+
+    if (isCorrect) {
+      p.levelStats[level].correct += 1;
+    } else {
+      p.levelStats[level].wrong += 1;
+    }
   }
 
   p.lockedQuestions[key] = {
@@ -124,7 +189,8 @@ export async function recordAttempt(uid, mode, level, questionId, isCorrect, poi
 
   await fsSet("progress", uid, p);
 
-  const showHint = willLock && !isCorrect && newAttemptCount >= 2;
+  const showHint =
+    willLock && !isCorrect && newAttemptCount >= 2;
 
   return {
     progress: p,
@@ -134,20 +200,38 @@ export async function recordAttempt(uid, mode, level, questionId, isCorrect, poi
   };
 }
 
-// ── WRITING ──────────────────────────────────────────────────────────────────
-export async function recordWritingSubmission(uid, level, aiScore, questionId) {
+// ── WRITING ─────────────────────────────────────────────────────────────────
+export async function recordWritingSubmission(
+  uid,
+  level,
+  aiScore,
+  questionId
+) {
   const p = await getProgress(uid);
 
   const t = today();
   const key = `writing_${level}_${questionId}`;
 
-  if (p.lockedQuestions[key]?.locked) return p;
+  if (p.lockedQuestions[key]?.locked) {
+    return p;
+  }
 
   p.totalAttempted += 1;
   p.totalScore += aiScore;
 
-  if (!p.dailyStats[t]) p.dailyStats[t] = { attempted: 0, correct: 0, wrong: 0 };
+  if (!p.dailyStats[t]) {
+    p.dailyStats[t] = {
+      attempted: 0,
+      correct: 0,
+      wrong: 0,
+      points: 0,
+    };
+  } else if (p.dailyStats[t].points == null) {
+    p.dailyStats[t].points = 0;
+  }
+
   p.dailyStats[t].attempted += 1;
+  p.dailyStats[t].points += aiScore;
 
   if (aiScore >= 3) {
     p.totalCorrect += 1;
@@ -157,13 +241,29 @@ export async function recordWritingSubmission(uid, level, aiScore, questionId) {
     p.dailyStats[t].wrong += 1;
   }
 
-  if (!p.levelStats[level]) p.levelStats[level] = { attempted: 0, correct: 0, wrong: 0 };
-  p.levelStats[level].attempted += 1;
-  if (aiScore >= 3) p.levelStats[level].correct += 1;
-  else p.levelStats[level].wrong += 1;
+  if (!p.levelStats[level]) {
+    p.levelStats[level] = {
+      attempted: 0,
+      correct: 0,
+      wrong: 0,
+    };
+  }
 
-  p.lockedQuestions[key] = { attempts: 1, correct: aiScore >= 3, locked: true };
+  p.levelStats[level].attempted += 1;
+
+  if (aiScore >= 3) {
+    p.levelStats[level].correct += 1;
+  } else {
+    p.levelStats[level].wrong += 1;
+  }
+
+  p.lockedQuestions[key] = {
+    attempts: 1,
+    correct: aiScore >= 3,
+    locked: true,
+  };
 
   await fsSet("progress", uid, p);
+
   return p;
 }
