@@ -1,6 +1,6 @@
 import {
   doc, getDoc, setDoc, updateDoc, deleteDoc,
-  collection, getDocs, addDoc, serverTimestamp, where, query
+  collection, getDocs, addDoc, serverTimestamp, where, query, onSnapshot,
 } from "firebase/firestore";
 import {
   ref, push, onValue, off, remove, serverTimestamp as rts
@@ -13,6 +13,31 @@ export async function fsGet(col, id) {
     const snap = await getDoc(doc(db, col, id));
     return snap.exists() ? { id: snap.id, ...snap.data() } : null;
   } catch { return null; }
+}
+
+// Firestore document ko live listen karna
+export function fsListen(col, id, callback) {
+  const documentRef = doc(db, col, id);
+
+  const unsubscribe = onSnapshot(
+    documentRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        callback({
+          id: snapshot.id,
+          ...snapshot.data(),
+        });
+      } else {
+        callback(null);
+      }
+    },
+    (error) => {
+      console.error("Firestore listener error:", error);
+      callback(null);
+    }
+  );
+
+  return unsubscribe;
 }
 
 export async function fsSet(col, id, data) {
